@@ -78,23 +78,31 @@ function LoginForm() {
         throw new Error(signInError.message || 'Failed to sign in')
       }
 
-      // Fetch role via server session API (uses service role, bypasses RLS recursion)
-      const accessToken = data.session?.access_token
-      if (!accessToken) throw new Error('Missing access token')
+      // Prefer role from Supabase auth.user (app_metadata/user_metadata)
+      const current = await supabase.auth.getUser()
+      const authRole = (current.data.user?.app_metadata as any)?.role || (current.data.user?.user_metadata as any)?.role
 
-      const sessionResp = await fetch('/api/auth/session', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
+      let role = authRole as string | undefined
 
-      if (!sessionResp.ok) {
-        const msg = await sessionResp.json().catch(() => ({}))
-        throw new Error(msg?.error || 'Failed to load session')
+      // Fallback to server session API (service role) if auth metadata is missing
+      if (!role) {
+        const accessToken = data.session?.access_token
+        if (!accessToken) throw new Error('Missing access token')
+
+        const sessionResp = await fetch('/api/auth/session', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        })
+
+        if (!sessionResp.ok) {
+          const msg = await sessionResp.json().catch(() => ({}))
+          throw new Error(msg?.error || 'Failed to load session')
+        }
+
+        const sessionJson: { user?: { role?: string } } = await sessionResp.json()
+        role = sessionJson.user?.role
       }
-
-      const sessionJson: { user?: { role?: string } } = await sessionResp.json()
-      const role = sessionJson.user?.role
 
       if (role === 'admin') {
         router.replace('/admin')
@@ -205,7 +213,7 @@ function LoginForm() {
             >
               {isLoading ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
                   Signing In...
                 </>
               ) : (
