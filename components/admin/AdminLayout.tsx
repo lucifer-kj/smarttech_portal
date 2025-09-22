@@ -36,42 +36,13 @@ interface NavigationItem {
   description?: string;
 }
 
+// Limit to implemented routes to avoid broken links
 const navigationItems: NavigationItem[] = [
   {
     name: 'Dashboard',
     href: '/admin',
     icon: LayoutDashboard,
     description: 'Overview and key metrics'
-  },
-  {
-    name: 'Clients',
-    href: '/admin/clients',
-    icon: Users,
-    description: 'Client management and analytics'
-  },
-  {
-    name: 'Jobs & Quotes',
-    href: '/admin/jobs',
-    icon: Briefcase,
-    description: 'Global jobs view and quote management'
-  },
-  {
-    name: 'Analytics',
-    href: '/admin/analytics',
-    icon: BarChart3,
-    description: 'Business intelligence and reports'
-  },
-  {
-    name: 'Maintenance',
-    href: '/admin/maintenance',
-    icon: Wrench,
-    description: 'Contracts and equipment registry'
-  },
-  {
-    name: 'Emergency',
-    href: '/admin/emergency',
-    icon: AlertTriangle,
-    description: 'Emergency request management'
   },
   {
     name: 'Users',
@@ -99,15 +70,9 @@ const navigationItems: NavigationItem[] = [
   },
   {
     name: 'Integrations',
-    href: '/admin/integrations',
+    href: '/admin/servicem8-import',
     icon: Zap,
-    description: 'ServiceM8 and third-party services'
-  },
-  {
-    name: 'Settings',
-    href: '/admin/settings',
-    icon: Settings,
-    description: 'System configuration'
+    description: 'ServiceM8 import and tools'
   }
 ];
 
@@ -195,7 +160,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 overflow-y-auto pb-28 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
@@ -258,7 +223,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </nav>
 
         {/* System Health */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white">
           <div className="space-y-2">
             <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">System Health</h3>
             <div className="space-y-1">
@@ -286,7 +251,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className="lg:pl-64 min-h-screen flex flex-col">
         {/* Topbar */}
         <div className="sticky top-0 z-40 bg-white shadow-sm border-b border-gray-200">
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
