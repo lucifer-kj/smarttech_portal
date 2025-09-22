@@ -70,9 +70,10 @@ async function getSystemHealth(): Promise<{
   };
 
   try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
     // Test ServiceM8 connection
     const sm8Start = Date.now();
-    const sm8Response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/servicem8/test-connection`);
+    const sm8Response = await fetch(`${baseUrl}/api/servicem8/test-connection`);
     const sm8ResponseTime = Date.now() - sm8Start;
     
     if (sm8Response.ok) {
@@ -90,7 +91,7 @@ async function getSystemHealth(): Promise<{
     }
 
     // Test webhook health
-    const webhookResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/management?action=stats`);
+    const webhookResponse = await fetch(`${baseUrl}/api/webhooks/management?action=stats`);
     if (webhookResponse.ok) {
       const webhookData = await webhookResponse.json();
       const stats = webhookData.data;

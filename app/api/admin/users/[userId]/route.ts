@@ -126,7 +126,8 @@ async function sendMagicLink(userId: string, supabase: ReturnType<typeof createA
   }
 
   // Send magic link via API
-  const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/magic-link`, {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const response = await fetch(`${baseUrl}/api/auth/magic-link`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: user.email }),

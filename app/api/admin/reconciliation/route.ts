@@ -171,7 +171,8 @@ async function performIncrementalSync(): Promise<number> {
   await new Promise(resolve => setTimeout(resolve, 2000));
   
   // Sync recent changes from ServiceM8
-  const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/servicem8/sync`, {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const response = await fetch(`${baseUrl}/api/servicem8/sync`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ type: 'incremental' }),
@@ -192,7 +193,8 @@ async function performFullSync(): Promise<number> {
   await new Promise(resolve => setTimeout(resolve, 5000));
   
   // Sync all data from ServiceM8
-  const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/servicem8/sync`, {
+  const baseUrl2 = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const response = await fetch(`${baseUrl2}/api/servicem8/sync`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ type: 'full' }),
@@ -213,7 +215,8 @@ async function performEmergencySync(): Promise<number> {
   await new Promise(resolve => setTimeout(resolve, 3000));
   
   // Force sync with conflict resolution
-  const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/servicem8/sync`, {
+  const baseUrl3 = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const response = await fetch(`${baseUrl3}/api/servicem8/sync`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ type: 'emergency', force: true }),

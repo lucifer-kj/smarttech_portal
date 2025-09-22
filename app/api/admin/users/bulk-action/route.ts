@@ -73,7 +73,8 @@ async function bulkSendMagicLinks(userIds: string[], supabase: ReturnType<typeof
       }
 
       // Send magic link
-      const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/magic-link`, {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      const response = await fetch(`${baseUrl}/api/auth/magic-link`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user.email }),

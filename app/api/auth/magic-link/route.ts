@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       type: 'magiclink',
       email: email,
       options: {
-        redirectTo: redirectTo || `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+        redirectTo: redirectTo || `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback`,
       },
     })
 

@@ -347,7 +347,7 @@ export default function AdminDashboard() {
       <Card className="p-6">
         <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Button variant="outline" className="h-20 flex-col">
+          <Button variant="outline" className="h-20 flex-col" onClick={() => location.assign('/admin/users/new')}>
             <Users className="h-6 w-6 mb-2" />
             <span className="text-sm">Add User</span>
           </Button>
