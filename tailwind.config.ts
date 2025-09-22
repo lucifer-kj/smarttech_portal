@@ -9,6 +9,15 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Semantic CSS vars bridge (ensure tailwind classes align with globals)
+        brand: {
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
+        },
+        neutral: {
+          DEFAULT: "var(--surface)",
+          foreground: "var(--surface-foreground)",
+        },
         // SmartTech Brand Colors
         primary: {
           50: "#eff6ff",
@@ -156,6 +165,9 @@ const config: Config = {
         },
         border: {
           DEFAULT: "#E6EEF8", // Neutral borders
+        },
+        outline: {
+          DEFAULT: "#0F6BFF",
         },
         // Additional semantic colors
         background: "hsl(var(--background))",
