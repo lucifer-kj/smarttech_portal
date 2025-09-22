@@ -78,19 +78,24 @@ function LoginForm() {
         throw new Error(signInError.message || 'Failed to sign in')
       }
 
-      // Fetch role from users table then redirect
-      const userId = data.user?.id
-      if (!userId) throw new Error('User not found after sign in')
+      // Fetch role via server session API (uses service role, bypasses RLS recursion)
+      const accessToken = data.session?.access_token
+      if (!accessToken) throw new Error('Missing access token')
 
-      const { data: userRow, error: userErr } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', userId)
-        .single()
+      const sessionResp = await fetch('/api/auth/session', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
 
-      if (userErr) throw new Error(userErr.message)
+      if (!sessionResp.ok) {
+        const msg = await sessionResp.json().catch(() => ({}))
+        throw new Error(msg?.error || 'Failed to load session')
+      }
 
-      const role = (userRow as Database['public']['Tables']['users']['Row'] | null)?.role
+      const sessionJson: { user?: { role?: string } } = await sessionResp.json()
+      const role = sessionJson.user?.role
+
       if (role === 'admin') {
         router.replace('/admin')
       } else {
