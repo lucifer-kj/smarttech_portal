@@ -221,33 +221,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             })}
           </div>
         </nav>
-
-        {/* System Health */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white">
-          <div className="space-y-2">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">System Health</h3>
-            <div className="space-y-1">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-600">ServiceM8</span>
-                <span className={`px-2 py-0.5 rounded-full ${getHealthColor(systemHealth.servicem8)}`}>
-                  {systemHealth.servicem8}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-600">Webhooks</span>
-                <span className={`px-2 py-0.5 rounded-full ${getHealthColor(systemHealth.webhooks)}`}>
-                  {systemHealth.webhooks}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-600">Database</span>
-                <span className={`px-2 py-0.5 rounded-full ${getHealthColor(systemHealth.database)}`}>
-                  {systemHealth.database}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Main content */}
