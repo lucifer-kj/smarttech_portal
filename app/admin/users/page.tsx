@@ -11,7 +11,8 @@ import {
   MoreVertical, 
   Mail, 
   Ban, 
-  CheckCircle
+  CheckCircle,
+  Download
 } from 'lucide-react';
 
 interface User {
@@ -176,6 +177,10 @@ export default function UserManagement() {
       : 'bg-green-100 text-green-800';
   };
 
+  function handleExport(): void {
+    throw new Error('Function not implemented.');
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -187,11 +192,11 @@ export default function UserManagement() {
           </p>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline">
-            <Users className="h-4 w-4 mr-2" />
+          <Button onClick={() => handleExport()} variant="outline">
+            <Download className="h-4 w-4 mr-2" />
             Export Users
           </Button>
-          <Button>
+          <Button onClick={() => location.assign('/admin/users/new')} variant="outline">
             <Plus className="h-4 w-4 mr-2" />
             Add User
           </Button>

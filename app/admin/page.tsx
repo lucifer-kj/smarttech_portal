@@ -129,7 +129,7 @@ export default function AdminDashboard() {
             <Activity className="h-4 w-4 mr-2" />
             Refresh
           </Button>
-          <Button>
+          <Button onClick={() => location.assign('/admin/analytics')} variant="outline">
             <BarChart3 className="h-4 w-4 mr-2" />
             View Analytics
           </Button>

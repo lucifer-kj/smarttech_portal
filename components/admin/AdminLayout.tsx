@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
 import { LogoutButton } from '@/components/auth/LogoutButton';
@@ -9,20 +9,20 @@ import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, 
   Users, 
-  Briefcase, 
-  BarChart3, 
-  Wrench, 
   AlertTriangle, 
   FileText, 
-  Settings, 
   Menu, 
   X, 
   Search, 
   Bell, 
   Activity,
   Database,
-  Zap
+  Zap,
+  ChevronDown,
+  Settings,
+  LogOut
 } from 'lucide-react';
+import Image from 'next/image';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -86,6 +86,19 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     webhooks: 'healthy',
     database: 'online'
   });
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
+
+  // Close user menu on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Check if user is admin
   useEffect(() => {
@@ -167,7 +180,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">ST</span>
+                <Image className="rounded-lg object-cover" src="/logo.png" alt="SmartTech" width={32} height={32} />
               </div>
             </div>
             <div className="ml-3">
@@ -256,11 +269,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <div className="flex items-center space-x-4">
               {/* Quick Actions */}
               <div className="hidden sm:flex items-center space-x-2">
-                <Button size="sm" variant="outline">
+                <Button size="sm" onClick={() => location.assign('/admin/servicem8-import')} variant="outline">
                   <Activity className="h-4 w-4 mr-1" />
                   Sync Now
                 </Button>
-                <Button size="sm" variant="outline">
+                <Button size="sm" onClick={() => location.assign('/admin/reconciliation')} variant="outline">
                   <Database className="h-4 w-4 mr-1" />
                   Reconcile
                 </Button>
@@ -273,12 +286,48 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </button>
 
               {/* User menu */}
-              <div className="flex items-center space-x-3">
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{user.email}</p>
-                  <p className="text-xs text-gray-500">Administrator</p>
-                </div>
-                <LogoutButton />
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen((v) => !v)}
+                  className="flex items-center space-x-2 focus:outline-none"
+                  aria-haspopup="menu"
+                  aria-expanded={userMenuOpen}
+                >
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-700 font-bold text-sm">
+                    {(user.email?.[0] || 'U').toUpperCase()}
+                  </span>
+                  <ChevronDown className="h-4 w-4 text-gray-400" />
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="text-sm font-semibold text-gray-900">{user.email || 'Admin User'}</p>
+                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      <p className="text-xs text-gray-400 mt-1">Administrator</p>
+                    </div>
+                    <div className="py-1">
+                      <a
+                        href="/admin/settings"
+                        className={`flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100`}
+                        role="menuitem"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <Settings className="h-4 w-4 mr-2 text-gray-400" />
+                        Settings
+                      </a>
+                      <div className="w-full">
+                        <LogoutButton
+                          variant="ghost"
+                          className="flex items-center w-full justify-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <LogOut className="h-4 w-4 mr-2 text-gray-400" />
+                          Sign Out
+                        </LogoutButton>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
