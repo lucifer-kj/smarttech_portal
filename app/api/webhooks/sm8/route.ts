@@ -29,7 +29,8 @@ export async function POST(request: NextRequest) {
       headers: Object.fromEntries(request.headers.entries()),
     });
     const webhookSecret = process.env.WEBHOOK_SECRET;
-    const timestamp = request.headers.get('x-servicem8-timestamp') || '';
+    // Header available for future validation; currently unused
+    const _timestamp = request.headers.get('x-servicem8-timestamp') || '';
     if (webhookSecret && signature) {
       const isValid = verifyWebhookSignature(body, signature, webhookSecret);
       if (!isValid) {

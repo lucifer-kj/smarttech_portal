@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { z } from 'zod'
 import { supabase } from '@/lib/supabase/client'
-import type { Database } from '@/types/database'
+// no direct Database type usage in this file
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -80,7 +80,8 @@ function LoginForm() {
 
       // Prefer role from Supabase auth.user (app_metadata/user_metadata)
       const current = await supabase.auth.getUser()
-      const authRole = (current.data.user?.app_metadata as any)?.role || (current.data.user?.user_metadata as any)?.role
+      type RoleMeta = { role?: 'admin' | 'client' | string }
+      const authRole = (current.data.user?.app_metadata as RoleMeta)?.role || (current.data.user?.user_metadata as RoleMeta)?.role
 
       let role = authRole as string | undefined
 
