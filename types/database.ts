@@ -328,6 +328,135 @@ export interface Database {
           updated_at?: string;
         };
       };
+      documents: {
+        Row: {
+          id: string;
+          job_id: string | null;
+          quote_id: string | null;
+          user_id: string;
+          title: string;
+          description: string | null;
+          file_path: string;
+          file_name: string;
+          file_size: number;
+          mime_type: string;
+          category: "quote" | "invoice" | "warranty" | "certificate" | "photo" | "other";
+          is_public: boolean;
+          requires_signature: boolean;
+          signed_at: string | null;
+          signed_by: string | null;
+          version: number;
+          parent_document_id: string | null;
+          metadata: Record<string, unknown>;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          job_id?: string | null;
+          quote_id?: string | null;
+          user_id: string;
+          title: string;
+          description?: string | null;
+          file_path: string;
+          file_name: string;
+          file_size: number;
+          mime_type: string;
+          category: "quote" | "invoice" | "warranty" | "certificate" | "photo" | "other";
+          is_public?: boolean;
+          requires_signature?: boolean;
+          signed_at?: string | null;
+          signed_by?: string | null;
+          version?: number;
+          parent_document_id?: string | null;
+          metadata?: Record<string, unknown>;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          job_id?: string | null;
+          quote_id?: string | null;
+          user_id?: string;
+          title?: string;
+          description?: string | null;
+          file_path?: string;
+          file_name?: string;
+          file_size?: number;
+          mime_type?: string;
+          category?: "quote" | "invoice" | "warranty" | "certificate" | "photo" | "other";
+          is_public?: boolean;
+          requires_signature?: boolean;
+          signed_at?: string | null;
+          signed_by?: string | null;
+          version?: number;
+          parent_document_id?: string | null;
+          metadata?: Record<string, unknown>;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      document_access_logs: {
+        Row: {
+          id: string;
+          document_id: string;
+          user_id: string;
+          action: "view" | "download" | "sign" | "delete";
+          ip_address: string | null;
+          user_agent: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          document_id: string;
+          user_id: string;
+          action: "view" | "download" | "sign" | "delete";
+          ip_address?: string | null;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          document_id?: string;
+          user_id?: string;
+          action?: "view" | "download" | "sign" | "delete";
+          ip_address?: string | null;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+      };
+      document_signatures: {
+        Row: {
+          id: string;
+          document_id: string;
+          user_id: string;
+          signature_data: string;
+          signature_type: "electronic" | "digital";
+          signed_at: string;
+          ip_address: string | null;
+          metadata: Record<string, unknown>;
+        };
+        Insert: {
+          id?: string;
+          document_id: string;
+          user_id: string;
+          signature_data: string;
+          signature_type: "electronic" | "digital";
+          signed_at?: string;
+          ip_address?: string | null;
+          metadata?: Record<string, unknown>;
+        };
+        Update: {
+          id?: string;
+          document_id?: string;
+          user_id?: string;
+          signature_data?: string;
+          signature_type?: "electronic" | "digital";
+          signed_at?: string;
+          ip_address?: string | null;
+          metadata?: Record<string, unknown>;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -415,6 +544,53 @@ export interface Database {
           created_at: string;
           updated_at: string;
         }[];
+      };
+      log_document_access: {
+        Args: {
+          p_document_id: string;
+          p_user_id: string;
+          p_action: string;
+          p_ip_address?: string | null;
+          p_user_agent?: string | null;
+        };
+        Returns: undefined;
+      };
+      get_user_documents: {
+        Args: {
+          p_user_id: string;
+          p_job_id?: string | null;
+          p_category?: string | null;
+          p_limit?: number;
+          p_offset?: number;
+        };
+        Returns: {
+          id: string;
+          job_id: string | null;
+          quote_id: string | null;
+          title: string;
+          description: string | null;
+          file_name: string;
+          file_size: number;
+          mime_type: string;
+          category: string;
+          is_public: boolean;
+          requires_signature: boolean;
+          signed_at: string | null;
+          version: number;
+          created_at: string;
+          updated_at: string;
+        }[];
+      };
+      create_document_version: {
+        Args: {
+          p_parent_document_id: string;
+          p_file_path: string;
+          p_file_name: string;
+          p_file_size: number;
+          p_mime_type: string;
+          p_user_id: string;
+        };
+        Returns: string;
       };
     };
     Enums: {

@@ -1,155 +1,294 @@
 'use client'
 
 import { useAuth } from '@/hooks/useAuth'
-import { LogoutButton } from '@/components/auth/LogoutButton'
+import ClientLayout from '@/components/client/ClientLayout'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import Link from 'next/link'
+import { 
+  Briefcase, 
+  FileText, 
+  Star, 
+  Calendar, 
+  AlertTriangle,
+  Clock,
+  CheckCircle,
+  TrendingUp,
+  Phone,
+  MessageCircle
+} from 'lucide-react'
 
 export default function ClientDashboard() {
   const { user } = useAuth()
 
+  // Mock data - will be replaced with real data from API
+  const dashboardData = {
+    upcomingJobs: [
+      { id: 1, title: 'HVAC Maintenance', date: '2024-01-15', time: '10:00 AM', status: 'scheduled' },
+      { id: 2, title: 'Electrical Inspection', date: '2024-01-18', time: '2:00 PM', status: 'confirmed' }
+    ],
+    pendingQuotes: [
+      { id: 1, title: 'Kitchen Renovation', amount: 15000, status: 'pending' },
+      { id: 2, title: 'Bathroom Upgrade', amount: 8500, status: 'pending' }
+    ],
+    recentJobs: [
+      { id: 1, title: 'Plumbing Repair', date: '2024-01-10', status: 'completed', rating: 5 },
+      { id: 2, title: 'AC Service', date: '2024-01-08', status: 'completed', rating: 4 }
+    ],
+    stats: {
+      totalJobs: 12,
+      completedJobs: 10,
+      pendingQuotes: 2,
+      averageRating: 4.8
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
+    <ClientLayout>
+      <div className="space-y-6">
+        {/* Welcome Section */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Client Portal
-              </h1>
-              <p className="text-gray-600">
-                Welcome back, {user?.email}
-              </p>
+              <h1 className="text-2xl font-bold">Welcome back, {user?.email?.split('@')[0]}!</h1>
+              <p className="text-blue-100 mt-1">Here&apos;s what&apos;s happening with your services</p>
             </div>
-            <LogoutButton />
+            <div className="hidden sm:block">
+              <Button 
+                variant="outline" 
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                onClick={() => window.location.href = '/client/emergency'}
+              >
+                <AlertTriangle className="h-4 w-4 mr-2" />
+                Emergency Service
+              </Button>
+            </div>
           </div>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Jobs Card */}
-            <Card className="p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6" />
-                    </svg>
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="p-4">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Briefcase className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Total Jobs</p>
+                <p className="text-2xl font-bold text-gray-900">{dashboardData.stats.totalJobs}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Completed</p>
+                <p className="text-2xl font-bold text-gray-900">{dashboardData.stats.completedJobs}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4">
+            <div className="flex items-center">
+              <div className="p-2 bg-yellow-100 rounded-lg">
+                <FileText className="h-6 w-6 text-yellow-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Pending Quotes</p>
+                <p className="text-2xl font-bold text-gray-900">{dashboardData.stats.pendingQuotes}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4">
+            <div className="flex items-center">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <Star className="h-6 w-6 text-purple-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Avg Rating</p>
+                <p className="text-2xl font-bold text-gray-900">{dashboardData.stats.averageRating}</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Upcoming Jobs */}
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Upcoming Jobs</h2>
+              <Link href="/client/jobs">
+                <Button size="sm" variant="outline">View All</Button>
+              </Link>
+            </div>
+            <div className="space-y-3">
+              {dashboardData.upcomingJobs.map((job) => (
+                <div key={job.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-blue-100 rounded-lg mr-3">
+                      <Calendar className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{job.title}</p>
+                      <p className="text-sm text-gray-600">{job.date} at {job.time}</p>
+                    </div>
+                  </div>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    job.status === 'scheduled' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+                  }`}>
+                    {job.status}
+                  </span>
+                </div>
+              ))}
+              {dashboardData.upcomingJobs.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <Calendar className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <p>No upcoming jobs scheduled</p>
+                </div>
+              )}
+            </div>
+          </Card>
+
+          {/* Pending Quotes */}
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Pending Quotes</h2>
+              <Link href="/client/quotes">
+                <Button size="sm" variant="outline">View All</Button>
+              </Link>
+            </div>
+            <div className="space-y-3">
+              {dashboardData.pendingQuotes.map((quote) => (
+                <div key={quote.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-yellow-100 rounded-lg mr-3">
+                      <FileText className="h-4 w-4 text-yellow-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{quote.title}</p>
+                      <p className="text-sm text-gray-600">${quote.amount.toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                    Review
+                  </Button>
+                </div>
+              ))}
+              {dashboardData.pendingQuotes.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <FileText className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <p>No pending quotes</p>
+                </div>
+              )}
+            </div>
+          </Card>
+
+          {/* Recent Jobs */}
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Recent Jobs</h2>
+              <Link href="/client/jobs">
+                <Button size="sm" variant="outline">View All</Button>
+              </Link>
+            </div>
+            <div className="space-y-3">
+              {dashboardData.recentJobs.map((job) => (
+                <div key={job.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-green-100 rounded-lg mr-3">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{job.title}</p>
+                      <p className="text-sm text-gray-600">{job.date}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="flex items-center mr-3">
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          className={`h-4 w-4 ${
+                            i < job.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                          }`} 
+                        />
+                      ))}
+                    </div>
+                    <Button size="sm" variant="outline">
+                      <MessageCircle className="h-4 w-4 mr-1" />
+                      Feedback
+                    </Button>
                   </div>
                 </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900">
-                    My Jobs
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    View and track your service requests
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4">
-                <Button className="w-full">
+              ))}
+            </div>
+          </Card>
+
+          {/* Quick Actions */}
+          <Card className="p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+            <div className="grid grid-cols-2 gap-3">
+              <Link href="/client/jobs">
+                <Button className="w-full justify-start" variant="outline">
+                  <Briefcase className="h-4 w-4 mr-2" />
                   View Jobs
                 </Button>
-              </div>
-            </Card>
-
-            {/* Quotes Card */}
-            <Card className="p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900">
-                    Quotes
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    Review and approve quotes
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4">
-                <Button className="w-full">
-                  View Quotes
+              </Link>
+              <Link href="/client/quotes">
+                <Button className="w-full justify-start" variant="outline">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Review Quotes
                 </Button>
-              </div>
-            </Card>
-
-            {/* Feedback Card */}
-            <Card className="p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900">
-                    Feedback
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    Rate your service experience
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4">
-                <Button className="w-full">
+              </Link>
+              <Link href="/client/feedback">
+                <Button className="w-full justify-start" variant="outline">
+                  <Star className="h-4 w-4 mr-2" />
                   Submit Feedback
                 </Button>
+              </Link>
+              <Link href="/client/maintenance">
+                <Button className="w-full justify-start" variant="outline">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Schedule Service
+                </Button>
+              </Link>
+            </div>
+            
+            {/* Emergency Section */}
+            <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center mb-3">
+                <AlertTriangle className="h-5 w-5 text-red-600 mr-2" />
+                <h3 className="font-medium text-red-800">Emergency Service</h3>
               </div>
-            </Card>
-          </div>
-
-          {/* Account Section */}
-          <div className="mt-8">
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Account Information
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Email
-                  </label>
-                  <p className="mt-1 text-sm text-gray-900">{user?.email}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    ServiceM8 UUID
-                  </label>
-                  <p className="mt-1 text-sm text-gray-900">{user?.sm8_uuid || 'Not assigned'}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Account Status
-                  </label>
-                  <p className="mt-1 text-sm text-gray-900">
-                    {user?.is_banned ? 'Banned' : 'Active'}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Member Since
-                  </label>
-                  <p className="mt-1 text-sm text-gray-900">
-                    {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}
-                  </p>
-                </div>
+              <p className="text-sm text-red-700 mb-3">Need immediate assistance? We&apos;re available 24/7 for emergencies.</p>
+              <div className="flex space-x-2">
+                <Button 
+                  size="sm" 
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                  onClick={() => window.location.href = '/client/emergency'}
+                >
+                  <Phone className="h-4 w-4 mr-1" />
+                  Call Now
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="border-red-300 text-red-700 hover:bg-red-50"
+                  onClick={() => window.location.href = '/client/emergency'}
+                >
+                  Request Service
+                </Button>
               </div>
-            </Card>
-          </div>
+            </div>
+          </Card>
         </div>
-      </main>
-    </div>
+      </div>
+    </ClientLayout>
   )
 }
