@@ -35,21 +35,27 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get user data from our users table
-    const { data: userData, error: dataError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
-      .single()
+    // Build user from Supabase Auth metadata
+    const appMeta = (user.app_metadata || {}) as Record<string, unknown>
+    const userMeta = (user.user_metadata || {}) as Record<string, unknown>
 
-    if (dataError || !userData) {
-      return NextResponse.json(
-        { error: 'User data not found' },
-        { status: 404 }
-      )
+    const role = (appMeta.role as string) || (userMeta.role as string) || 'client'
+    const sm8_uuid = (appMeta.sm8_uuid as string) || (userMeta.sm8_uuid as string) || null
+    const is_banned = Boolean((appMeta.is_banned as boolean) ?? (userMeta.is_banned as boolean) ?? false)
+    const first_login_complete = Boolean(
+      (appMeta.first_login_complete as boolean) ?? (userMeta.first_login_complete as boolean) ?? false
+    )
+
+    const userInfo: UserData = {
+      id: user.id,
+      email: user.email || '',
+      sm8_uuid,
+      role,
+      is_banned,
+      first_login_complete,
+      created_at: user.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     }
-
-    const userInfo = userData as UserData
 
     // Check if user is banned
     if (userInfo.is_banned) {

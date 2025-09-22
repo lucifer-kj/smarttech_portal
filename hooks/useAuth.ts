@@ -32,20 +32,29 @@ export function useAuth() {
         }
 
         if (session?.user) {
-          // Fetch user data from our users table
-          const { data: userData, error: userError } = await supabase
-            .from("users")
-            .select("*")
-            .eq("id", session.user.id)
-            .single();
+          const authUser = session.user;
+          const appMeta = (authUser.app_metadata || {}) as Record<string, unknown>;
+          const userMeta = (authUser.user_metadata || {}) as Record<string, unknown>;
 
-          if (userError) {
-            console.error("Error fetching user data:", userError);
-            setLoading(false);
-            return;
-          }
+          const role = (appMeta.role as string) || (userMeta.role as string) || "client";
+          const sm8_uuid = (appMeta.sm8_uuid as string) || (userMeta.sm8_uuid as string) || null;
+          const is_banned = Boolean((appMeta.is_banned as boolean) ?? (userMeta.is_banned as boolean) ?? false);
+          const first_login_complete = Boolean(
+            (appMeta.first_login_complete as boolean) ?? (userMeta.first_login_complete as boolean) ?? false
+          );
 
-          setUser(userData as User);
+          const mappedUser: User = {
+            id: authUser.id,
+            email: authUser.email || "",
+            sm8_uuid,
+            role: role === "admin" ? "admin" : "client",
+            is_banned,
+            first_login_complete,
+            created_at: authUser.created_at || new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+
+          setUser(mappedUser);
           setSession(session);
         } else {
           setUser(null);
@@ -67,17 +76,30 @@ export function useAuth() {
       console.log("Auth state changed:", event, session);
 
       if (event === "SIGNED_IN" && session?.user) {
-        // Fetch user data
-        const { data: userData, error } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", session.user.id)
-          .single();
+        const authUser = session.user;
+        const appMeta = (authUser.app_metadata || {}) as Record<string, unknown>;
+        const userMeta = (authUser.user_metadata || {}) as Record<string, unknown>;
 
-        if (!error && userData) {
-          setUser(userData as User);
-          setSession(session);
-        }
+        const role = (appMeta.role as string) || (userMeta.role as string) || "client";
+        const sm8_uuid = (appMeta.sm8_uuid as string) || (userMeta.sm8_uuid as string) || null;
+        const is_banned = Boolean((appMeta.is_banned as boolean) ?? (userMeta.is_banned as boolean) ?? false);
+        const first_login_complete = Boolean(
+          (appMeta.first_login_complete as boolean) ?? (userMeta.first_login_complete as boolean) ?? false
+        );
+
+        const mappedUser: User = {
+          id: authUser.id,
+          email: authUser.email || "",
+          sm8_uuid,
+          role: role === "admin" ? "admin" : "client",
+          is_banned,
+          first_login_complete,
+          created_at: authUser.created_at || new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+
+        setUser(mappedUser);
+        setSession(session);
       } else if (event === "SIGNED_OUT") {
         setUser(null);
         setSession(null);

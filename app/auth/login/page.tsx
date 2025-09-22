@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -15,51 +15,14 @@ const loginSchema = z.object({
 })
 
 function LoginForm() {
-  const searchParams = useSearchParams()
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  // Magic link removed; success state no longer used
 
-  const handleMagicLink = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      // Validate email
-      const validatedData = loginSchema.parse({ email })
-      
-      const response = await fetch('/api/auth/magic-link', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: validatedData.email,
-          redirectTo: searchParams.get('redirectTo') || undefined,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to send magic link')
-      }
-
-      setSuccess(true)
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        setError(err.issues[0].message)
-      } else {
-        setError(err instanceof Error ? err.message : 'An error occurred')
-      }
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  // Magic link handler removed
 
   const handlePasswordSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -78,29 +41,20 @@ function LoginForm() {
         throw new Error(signInError.message || 'Failed to sign in')
       }
 
-      // Prefer role from Supabase auth.user (app_metadata/user_metadata)
-      const current = await supabase.auth.getUser()
+      // Fetch fresh auth user (ensures latest app_metadata/user_metadata)
+      const { data: currentUser } = await supabase.auth.getUser()
       type RoleMeta = { role?: 'admin' | 'client' | string }
-      const authRole = (current.data.user?.app_metadata as RoleMeta)?.role || (current.data.user?.user_metadata as RoleMeta)?.role
-
-      let role = authRole as string | undefined
+      const authRole = (currentUser.user?.app_metadata as RoleMeta)?.role || (currentUser.user?.user_metadata as RoleMeta)?.role
 
       // Fallback to server session API (service role) if auth metadata is missing
+      let role = authRole as string | undefined
       if (!role) {
         const accessToken = data.session?.access_token
         if (!accessToken) throw new Error('Missing access token')
 
         const sessionResp = await fetch('/api/auth/session', {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: { Authorization: `Bearer ${accessToken}` },
         })
-
-        if (!sessionResp.ok) {
-          const msg = await sessionResp.json().catch(() => ({}))
-          throw new Error(msg?.error || 'Failed to load session')
-        }
-
         const sessionJson: { user?: { role?: string } } = await sessionResp.json()
         role = sessionJson.user?.role
       }
@@ -121,38 +75,7 @@ function LoginForm() {
     }
   }
 
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="p-8 max-w-md w-full mx-4">
-          <div className="text-center">
-            <div className="rounded-full h-12 w-12 bg-green-100 mx-auto mb-4 flex items-center justify-center">
-              <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Check Your Email
-            </h2>
-            <p className="text-gray-600 mb-6">
-              We&apos;ve sent a magic link to <strong>{email}</strong>. 
-              Click the link in your email to sign in.
-            </p>
-            <Button 
-              variant="outline"
-              onClick={() => {
-                setSuccess(false)
-                setEmail('')
-              }}
-              className="w-full"
-            >
-              Try Different Email
-            </Button>
-          </div>
-        </Card>
-      </div>
-    )
-  }
+  // No magic link success screen
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -161,9 +84,7 @@ function LoginForm() {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Sign In to SmartTech Portal
           </h1>
-          <p className="text-gray-600">
-            Enter your email address to receive a magic link
-          </p>
+          <p className="text-gray-600">Sign in with your email and password.</p>
         </div>
 
         <form className="space-y-4">
@@ -187,7 +108,7 @@ function LoginForm() {
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
-              <span className="text-xs text-gray-500">Optional if using magic link</span>
+              <span className="text-xs text-gray-500">&nbsp;</span>
             </div>
             <Input
               id="password"
@@ -205,37 +126,20 @@ function LoginForm() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
             <Button
               type="button"
               onClick={handlePasswordSignIn}
               disabled={isLoading || !email || !password}
-              className="w-full"
+              className="w-full bg-blue-600 text-white hover:bg-blue-700"
             >
               {isLoading ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                   Signing In...
                 </>
               ) : (
                 'Sign In'
-              )}
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleMagicLink}
-              disabled={isLoading || !email}
-              className="w-full"
-            >
-              {isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                  Sending Link...
-                </>
-              ) : (
-                'Send Magic Link'
               )}
             </Button>
           </div>
