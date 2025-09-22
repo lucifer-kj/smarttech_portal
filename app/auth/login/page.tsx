@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { z } from 'zod'
 import { supabase } from '@/lib/supabase/client'
+import type { Database } from '@/types/database'
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -83,13 +84,13 @@ function LoginForm() {
 
       const { data: userRow, error: userErr } = await supabase
         .from('users')
-        .select('*')
+        .select('role')
         .eq('id', userId)
         .single()
 
       if (userErr) throw new Error(userErr.message)
 
-      const role = (userRow as any)?.role
+      const role = (userRow as Database['public']['Tables']['users']['Row'] | null)?.role
       if (role === 'admin') {
         router.replace('/admin')
       } else {
