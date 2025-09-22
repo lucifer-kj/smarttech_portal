@@ -47,23 +47,33 @@ export async function middleware(req: NextRequest) {
     req.nextUrl.pathname.startsWith(route)
   )
 
-  // If accessing protected route without session, redirect to login
+  // If accessing protected route without server session, allow through and let client-side guards handle redirects
+  // This avoids issues where client sign-in hasn't synced cookies for middleware yet
   if (isProtectedRoute && !session) {
-    const redirectUrl = new URL('/auth/login', req.url)
-    redirectUrl.searchParams.set('redirectTo', req.nextUrl.pathname)
-    return NextResponse.redirect(redirectUrl)
+    return res
   }
 
-  // If accessing admin route, check if user is admin
+  // If accessing admin route, check if user is admin via Auth metadata or email allowlist
   if (isAdminRoute && session) {
     try {
-      const { data: user } = await supabase
-        .from('users')
-        .select('role, is_banned')
-        .eq('id', session.user.id)
-        .single()
+      const appMeta = (session.user.app_metadata || {}) as Record<string, unknown>
+      const userMeta = (session.user.user_metadata || {}) as Record<string, unknown>
+      let role = (appMeta.role as string) || (userMeta.role as string) || ''
+      const is_banned = Boolean((appMeta.is_banned as boolean) ?? (userMeta.is_banned as boolean) ?? false)
 
-      if (!user || user.is_banned || user.role !== 'admin') {
+      if (!role) {
+        const allowlist = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
+          .split(',')
+          .map(e => e.trim().toLowerCase())
+          .filter(Boolean)
+        if (session.user.email && allowlist.includes(session.user.email.toLowerCase())) {
+          role = 'admin'
+        } else {
+          role = 'client'
+        }
+      }
+
+      if (is_banned || role !== 'admin') {
         return NextResponse.redirect(new URL('/unauthorized', req.url))
       }
     } catch (error) {
@@ -72,16 +82,14 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // If accessing client route, check if user is not banned
+  // If accessing client route, check if user is not banned via Auth metadata
   if (req.nextUrl.pathname.startsWith('/client') && session) {
     try {
-      const { data: user } = await supabase
-        .from('users')
-        .select('is_banned')
-        .eq('id', session.user.id)
-        .single()
+      const appMeta = (session.user.app_metadata || {}) as Record<string, unknown>
+      const userMeta = (session.user.user_metadata || {}) as Record<string, unknown>
+      const is_banned = Boolean((appMeta.is_banned as boolean) ?? (userMeta.is_banned as boolean) ?? false)
 
-      if (user?.is_banned) {
+      if (is_banned) {
         return NextResponse.redirect(new URL('/banned', req.url))
       }
     } catch (error) {

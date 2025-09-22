@@ -53,14 +53,24 @@ function LoginForm() {
       // Fallback to server session API (service role) if auth metadata is missing
       let role = authRole as string | undefined
       if (!role) {
-        const accessToken = data.session?.access_token
-        if (!accessToken) throw new Error('Missing access token')
+        // Try admin allowlist fallback first
+        const allowlist = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
+          .split(',')
+          .map(e => e.trim().toLowerCase())
+          .filter(Boolean)
+        if (authUser?.email && allowlist.includes(authUser.email.toLowerCase())) {
+          role = 'admin'
+        } else {
+          // Fallback to server session API (service role) if still missing
+          const accessToken = data.session?.access_token
+          if (!accessToken) throw new Error('Missing access token')
 
-        const sessionResp = await fetch('/api/auth/session', {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        })
-        const sessionJson: { user?: { role?: string } } = await sessionResp.json()
-        role = sessionJson.user?.role
+          const sessionResp = await fetch('/api/auth/session', {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          })
+          const sessionJson: { user?: { role?: string } } = await sessionResp.json()
+          role = sessionJson.user?.role
+        }
       }
 
       if (role === 'admin') {

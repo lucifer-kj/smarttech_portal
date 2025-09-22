@@ -39,12 +39,25 @@ export async function GET(request: NextRequest) {
     const appMeta = (user.app_metadata || {}) as Record<string, unknown>
     const userMeta = (user.user_metadata || {}) as Record<string, unknown>
 
-    const role = (appMeta.role as string) || (userMeta.role as string) || 'client'
+    let role = (appMeta.role as string) || (userMeta.role as string) || ''
     const sm8_uuid = (appMeta.sm8_uuid as string) || (userMeta.sm8_uuid as string) || null
     const is_banned = Boolean((appMeta.is_banned as boolean) ?? (userMeta.is_banned as boolean) ?? false)
     const first_login_complete = Boolean(
       (appMeta.first_login_complete as boolean) ?? (userMeta.first_login_complete as boolean) ?? false
     )
+
+    // Fallback: if role missing, check admin allowlist by email
+    if (!role) {
+      const allowlist = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
+        .split(',')
+        .map(e => e.trim().toLowerCase())
+        .filter(Boolean)
+      if (user.email && allowlist.includes(user.email.toLowerCase())) {
+        role = 'admin'
+      } else {
+        role = 'client'
+      }
+    }
 
     const userInfo: UserData = {
       id: user.id,
