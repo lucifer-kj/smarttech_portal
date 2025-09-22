@@ -31,8 +31,7 @@ export async function GET(request: NextRequest) {
       includeActivities,
       includeAttachments,
       includeMaterials,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      status: status ? [status as any] : undefined,
+      status: status ? [status as 'Quote' | 'Scheduled' | 'In Progress' | 'Completed' | 'Cancelled' | 'On Hold'] : undefined,
       limit: limit ? parseInt(limit) : undefined,
       offset: offset ? parseInt(offset) : undefined,
     };

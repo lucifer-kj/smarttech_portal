@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    if (!userData || userData.role !== 'admin') {
+    if (!userData || (userData as { role: string }).role !== 'admin') {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     // Check if user should receive this notification type
     const shouldSend = await PushSubscriptionService.shouldSendNotification(
       userId, 
-      notificationType as any
+      notificationType as 'job_updates' | 'quote_approvals' | 'technician_arrivals' | 'job_completions' | 'emergency_alerts' | 'system_alerts' | 'maintenance_reminders' | 'feedback_responses' | 'marketing'
     )
 
     if (!shouldSend) {
@@ -102,7 +102,8 @@ export async function POST(request: NextRequest) {
         const success = await pushNotificationService.sendNotification(subscription, payload)
         
         // Log notification in history
-        const { data: notificationHistory } = await supabase.rpc('log_notification_delivery', {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: notificationHistory } = await (supabase as any).rpc('log_notification_delivery', {
           p_user_id: userId,
           p_subscription_id: subscriptionRecord.id,
           p_notification_type: notificationType,

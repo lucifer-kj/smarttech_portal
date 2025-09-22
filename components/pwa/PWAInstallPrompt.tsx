@@ -5,6 +5,16 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { X, Download, Smartphone, Monitor } from 'lucide-react'
 
+// Define interface for navigator with standalone property
+interface NavigatorWithStandalone extends Navigator {
+  standalone?: boolean
+}
+
+// Type guard for checking standalone mode
+function isNavigatorWithStandalone(navigator: Navigator): navigator is NavigatorWithStandalone {
+  return 'standalone' in navigator
+}
+
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[]
   readonly userChoice: Promise<{
@@ -33,7 +43,7 @@ export function PWAInstallPrompt({ onInstall, onDismiss }: PWAInstallPromptProps
       }
       
       // Check if running in standalone mode on iOS
-      if ((window.navigator as any).standalone === true) {
+      if (isNavigatorWithStandalone(window.navigator) && window.navigator.standalone === true) {
         setIsInstalled(true)
         return
       }
@@ -164,7 +174,7 @@ export function usePWAInstall() {
         return
       }
       
-      if ((window.navigator as any).standalone === true) {
+      if (isNavigatorWithStandalone(window.navigator) && window.navigator.standalone === true) {
         setIsInstalled(true)
         return
       }

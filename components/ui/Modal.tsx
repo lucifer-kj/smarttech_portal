@@ -228,7 +228,7 @@ const ConfirmationModal = React.forwardRef<HTMLDivElement, ConfirmationModalProp
       props.onClose();
     };
 
-    const confirmButtonVariant = variant === "danger" ? "destructive" : "default";
+    // const confirmButtonVariant = variant === "danger" ? "destructive" : "default"; // TODO: Implement button variant logic
 
     return (
       <Modal ref={ref} {...props}>

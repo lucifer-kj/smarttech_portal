@@ -5,15 +5,13 @@ import ClientLayout from '@/components/client/ClientLayout'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
-import { 
+import {
   Briefcase, 
   FileText, 
   Star, 
   Calendar, 
   AlertTriangle,
-  Clock,
   CheckCircle,
-  TrendingUp,
   Phone,
   MessageCircle
 } from 'lucide-react'

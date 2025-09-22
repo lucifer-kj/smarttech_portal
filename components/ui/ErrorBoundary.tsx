@@ -152,7 +152,7 @@ function ErrorFallback({
   error, 
   errorInfo, 
   errorId, 
-  resetError, 
+  // resetError, 
   retry 
 }: ErrorFallbackProps) {
   const isDevelopment = process.env.NODE_ENV === 'development'
@@ -296,7 +296,7 @@ export function ComponentErrorBoundary({
           <div className="flex items-center space-x-2">
             <AlertTriangle className="h-5 w-5 text-red-600" />
             <span className="text-red-800 text-sm">
-              This component encountered an error and couldn't be displayed.
+              This component encountered an error and couldn&apos;t be displayed.
             </span>
           </div>
         </div>

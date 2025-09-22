@@ -11,8 +11,8 @@ export interface PushSubscriptionData {
   }
 }
 
-export interface NotificationPermission {
-  state: NotificationPermissionState
+export interface NotificationPermissionInfo {
+  state: NotificationPermission
   granted: boolean
   denied: boolean
   default: boolean
@@ -20,7 +20,7 @@ export interface NotificationPermission {
 
 export interface PushNotificationHook {
   // Permission state
-  permission: NotificationPermission
+  permission: NotificationPermissionInfo
   isSupported: boolean
   
   // Subscription state
@@ -41,7 +41,7 @@ export interface PushNotificationHook {
 
 export function usePushNotifications(): PushNotificationHook {
   const { user } = useAuth()
-  const [permission, setPermission] = useState<NotificationPermission>({
+  const [permission, setPermission] = useState<NotificationPermissionInfo>({
     state: 'default',
     granted: false,
     denied: false,
@@ -52,16 +52,7 @@ export function usePushNotifications(): PushNotificationHook {
   const [error, setError] = useState<string | null>(null)
   const [isSupported, setIsSupported] = useState(false)
 
-  // Check if push notifications are supported
-  useEffect(() => {
-    const supported = 'serviceWorker' in navigator && 'PushManager' in window
-    setIsSupported(supported)
-    
-    if (supported) {
-      updatePermissionState()
-      checkSubscriptionStatus()
-    }
-  }, [])
+  // (moved below after function declarations)
 
   // Update permission state
   const updatePermissionState = useCallback(() => {
@@ -89,6 +80,17 @@ export function usePushNotifications(): PushNotificationHook {
       setError('Failed to check subscription status')
     }
   }, [isSupported, user])
+
+  // Check if push notifications are supported
+  useEffect(() => {
+    const supported = 'serviceWorker' in navigator && 'PushManager' in window
+    setIsSupported(supported)
+    
+    if (supported) {
+      updatePermissionState()
+      checkSubscriptionStatus()
+    }
+  }, [checkSubscriptionStatus, updatePermissionState])
 
   // Request notification permission
   const requestPermission = useCallback(async (): Promise<boolean> => {
@@ -137,7 +139,7 @@ export function usePushNotifications(): PushNotificationHook {
       const { publicKey } = await response.json()
       
       // Convert VAPID key to Uint8Array
-      const applicationServerKey = urlBase64ToUint8Array(publicKey)
+      const applicationServerKey: Uint8Array = urlBase64ToUint8Array(publicKey)
       
       // Register service worker
       const registration = await navigator.serviceWorker.register('/sw.js')
@@ -146,7 +148,7 @@ export function usePushNotifications(): PushNotificationHook {
       // Subscribe to push manager
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey
+        applicationServerKey: applicationServerKey.buffer as ArrayBuffer
       })
       
       // Send subscription to server
@@ -334,7 +336,7 @@ export function usePushNotifications(): PushNotificationHook {
       handleNotificationClick(notification)
     }
 
-    const handleNotificationCloseEvent = (event: Event) => {
+    const handleNotificationCloseEvent = (event: Event) => { // TODO: Implement notification close handling
       const notification = event.target as Notification
       handleNotificationClose(notification)
     }

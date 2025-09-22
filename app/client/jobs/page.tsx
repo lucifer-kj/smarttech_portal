@@ -62,7 +62,7 @@ const priorityConfig = {
 }
 
 export default function JobsPage() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth() // TODO: Use user data for job filtering
   const [jobs, setJobs] = useState<Job[]>([])
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -234,10 +234,10 @@ export default function JobsPage() {
     })
   }
 
-  const getStatusIcon = (status: Job['status']) => {
-    const Icon = statusConfig[status].icon
-    return <Icon className="h-4 w-4" />
-  }
+  // const getStatusIcon = (status: Job['status']) => {
+  //   const Icon = statusConfig[status].icon
+  //   return <Icon className="h-4 w-4" />
+  // }
 
   const toggleJobExpansion = (jobId: string) => {
     setExpandedJob(expandedJob === jobId ? null : jobId)

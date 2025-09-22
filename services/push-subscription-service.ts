@@ -1,6 +1,16 @@
 import { createAdminClient } from '@/lib/supabase/client'
 import { PushSubscription } from './push-notification-service'
 
+// Define specific types for device information
+export interface DeviceInfo {
+  platform?: string
+  browser?: string
+  version?: string
+  os?: string
+  userAgent?: string
+  [key: string]: string | number | boolean | undefined
+}
+
 export interface PushSubscriptionRecord {
   id: string
   user_id: string
@@ -8,7 +18,7 @@ export interface PushSubscriptionRecord {
   p256dh_key: string
   auth_key: string
   user_agent: string | null
-  device_info: Record<string, any> | null
+  device_info: DeviceInfo | null
   enabled: boolean
   created_at: string
   updated_at: string
@@ -43,7 +53,7 @@ export class PushSubscriptionService {
     userId: string,
     subscription: PushSubscription,
     userAgent?: string,
-    deviceInfo?: Record<string, any>
+    deviceInfo?: DeviceInfo
   ): Promise<PushSubscriptionRecord> {
     const supabase = createAdminClient()
 
@@ -58,7 +68,7 @@ export class PushSubscriptionService {
       last_used_at: new Date().toISOString()
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(this.TABLE_NAME)
       .insert(subscriptionData)
       .select()
@@ -80,7 +90,7 @@ export class PushSubscriptionService {
   ): Promise<void> {
     const supabase = createAdminClient()
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from(this.TABLE_NAME)
       .update({
         ...updates,
@@ -186,7 +196,7 @@ export class PushSubscriptionService {
   static async getNotificationPreferences(userId: string): Promise<NotificationPreferences | null> {
     const supabase = createAdminClient()
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(this.PREFERENCES_TABLE)
       .select('*')
       .eq('user_id', userId)
@@ -224,7 +234,7 @@ export class PushSubscriptionService {
       timezone: 'America/New_York'
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(this.PREFERENCES_TABLE)
       .insert({
         user_id: userId,
@@ -249,7 +259,7 @@ export class PushSubscriptionService {
   ): Promise<NotificationPreferences> {
     const supabase = createAdminClient()
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(this.PREFERENCES_TABLE)
       .update(preferences)
       .eq('user_id', userId)

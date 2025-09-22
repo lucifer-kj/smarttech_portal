@@ -28,8 +28,15 @@ import {
   Radar,
 } from 'recharts';
 
+// Define chart data point interface
+export interface ChartDataPoint {
+  name: string
+  value: number
+  [key: string]: string | number
+}
+
 export interface ChartProps extends React.HTMLAttributes<HTMLDivElement> {
-  data: any[];
+  data: ChartDataPoint[];
   type: "line" | "area" | "bar" | "pie" | "composed" | "scatter" | "radar";
   width?: number | string;
   height?: number | string;
@@ -65,12 +72,15 @@ const Chart = React.forwardRef<HTMLDivElement, ChartProps>(
     ...props 
   }, ref) => {
     const renderChart = () => {
+      const numericHeight = typeof height === 'number' ? height : 300
+      const numericWidth = typeof width === 'number' ? width : undefined
+
       const commonProps = {
         data,
-        width,
-        height,
+        ...(numericWidth !== undefined ? { width: numericWidth } : {}),
+        height: numericHeight,
         margin: { top: 20, right: 30, left: 20, bottom: 5 },
-      };
+      } as const
 
       switch (type) {
         case "line":
@@ -144,13 +154,13 @@ const Chart = React.forwardRef<HTMLDivElement, ChartProps>(
           }));
 
           return (
-            <PieChart width={width} height={height}>
+            <PieChart width={typeof width === 'number' ? width : undefined} height={typeof height === 'number' ? height : 300}>
               <Pie
                 data={pieData}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                label={true}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
@@ -215,7 +225,7 @@ const Chart = React.forwardRef<HTMLDivElement, ChartProps>(
           );
 
         default:
-          return null;
+          return <div />;
       }
     };
 
@@ -226,7 +236,7 @@ const Chart = React.forwardRef<HTMLDivElement, ChartProps>(
         {...props}
       >
         <ResponsiveContainer width={width} height={height}>
-          {renderChart()}
+          {renderChart() ?? <></>}
         </ResponsiveContainer>
       </div>
     );
@@ -244,7 +254,7 @@ export interface MetricCardProps extends React.HTMLAttributes<HTMLDivElement> {
   };
   icon?: React.ReactNode;
   trend?: {
-    data: any[];
+    data: ChartDataPoint[];
     type: "line" | "area";
   };
   color?: "primary" | "success" | "warning" | "danger" | "info";

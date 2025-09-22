@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useAuth } from '@/hooks/useAuth'
 import ClientLayout from '@/components/client/ClientLayout'
 import { Card } from '@/components/ui/Card'
@@ -9,26 +10,20 @@ import {
   Briefcase, 
   Calendar, 
   Clock, 
-  MapPin, 
   User, 
   Phone, 
   MessageCircle,
   Download,
-  Eye,
   Camera,
   CheckCircle,
   AlertCircle,
   ArrowLeft,
   FileText,
   Star,
-  ChevronRight,
-  ChevronDown,
-  ExternalLink,
   Share,
   Edit,
   Plus,
-  Image,
-  Video,
+  Eye,
   FileText as Document
 } from 'lucide-react'
 import Link from 'next/link'
@@ -129,7 +124,7 @@ export default function JobDetailPage() {
   const [job, setJob] = useState<JobDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'documents' | 'photos' | 'materials'>('overview')
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
+  // const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set()) // TODO: Implement expandable sections
 
   // Mock data - will be replaced with real API call
   useEffect(() => {
@@ -323,17 +318,17 @@ export default function JobDetailPage() {
     return `${wholeHours}h ${minutes}m`
   }
 
-  const toggleSection = (sectionId: string) => {
-    setExpandedSections(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(sectionId)) {
-        newSet.delete(sectionId)
-      } else {
-        newSet.add(sectionId)
-      }
-      return newSet
-    })
-  }
+  // const toggleSection = (sectionId: string) => {
+  //   setExpandedSections(prev => {
+  //     const newSet = new Set(prev)
+  //     if (newSet.has(sectionId)) {
+  //       newSet.delete(sectionId)
+  //     } else {
+  //       newSet.add(sectionId)
+  //     }
+  //     return newSet
+  //   })
+  // }
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Briefcase },
@@ -696,10 +691,12 @@ export default function JobDetailPage() {
               {job.photos?.map((photo) => (
                 <Card key={photo.id} className="overflow-hidden">
                   <div className="aspect-w-16 aspect-h-9">
-                    <img
+                    <Image
                       src={photo.url}
                       alt={photo.caption || 'Job photo'}
                       className="w-full h-48 object-cover"
+                      width={400}
+                      height={192}
                     />
                   </div>
                   <div className="p-4">

@@ -57,7 +57,7 @@ export class WalkthroughService {
       }
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(this.TABLE_NAME)
       .insert(progressData)
       .select()
@@ -81,7 +81,11 @@ export class WalkthroughService {
   ): Promise<void> {
     const supabase = createAdminClient()
 
-    const updateData: any = {
+    const updateData: {
+      current_step: number
+      last_accessed_at: string
+      metadata?: Record<string, unknown>
+    } = {
       current_step: currentStep,
       last_accessed_at: new Date().toISOString()
     }
@@ -90,7 +94,7 @@ export class WalkthroughService {
       updateData.metadata = metadata
     }
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from(this.TABLE_NAME)
       .update(updateData)
       .eq('user_id', userId)
@@ -124,7 +128,7 @@ export class WalkthroughService {
       }
     }
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from(this.TABLE_NAME)
       .update(updateData)
       .eq('user_id', userId)
@@ -154,7 +158,7 @@ export class WalkthroughService {
       }
     }
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from(this.TABLE_NAME)
       .update(updateData)
       .eq('user_id', userId)
@@ -226,7 +230,7 @@ export class WalkthroughService {
       throw new Error(`Failed to fetch completed walkthroughs: ${error.message}`)
     }
 
-    return data.map(item => item.walkthrough_id)
+    return (data as any[]).map(item => item.walkthrough_id)
   }
 
   /**
@@ -245,7 +249,7 @@ export class WalkthroughService {
       throw new Error(`Failed to fetch skipped walkthroughs: ${error.message}`)
     }
 
-    return data.map(item => item.walkthrough_id)
+    return (data as any[]).map(item => item.walkthrough_id)
   }
 
   /**
@@ -290,13 +294,13 @@ export class WalkthroughService {
     }
 
     // Process analytics data
-    const analyticsMap = new Map<string, WalkthroughAnalytics>()
+    const analyticsMap: Record<string, WalkthroughAnalytics> = {}
 
-    data.forEach(progress => {
-      const id = progress.walkthrough_id
+    ;(data as any[]).forEach((progress: any) => {
+      const id = progress.walkthrough_id as string
       
-      if (!analyticsMap.has(id)) {
-        analyticsMap.set(id, {
+      if (!analyticsMap[id]) {
+        analyticsMap[id] = {
           walkthrough_id: id,
           total_starts: 0,
           total_completions: 0,
@@ -305,10 +309,10 @@ export class WalkthroughService {
           average_duration: 0,
           common_drop_off_step: 0,
           user_feedback: []
-        })
+        }
       }
 
-      const analytics = analyticsMap.get(id)!
+      const analytics = analyticsMap[id]
       analytics.total_starts++
 
       if (progress.completed) {
@@ -333,13 +337,13 @@ export class WalkthroughService {
     })
 
     // Calculate completion rates and drop-off points
-    analyticsMap.forEach(analytics => {
+    Object.values(analyticsMap).forEach((analytics: WalkthroughAnalytics) => {
       analytics.completion_rate = analytics.total_starts > 0 
         ? (analytics.total_completions / analytics.total_starts) * 100 
         : 0
     })
 
-    return Array.from(analyticsMap.values())
+    return Object.values(analyticsMap)
   }
 
   /**
@@ -438,7 +442,7 @@ export class WalkthroughService {
       timestamp: new Date().toISOString()
     }
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('walkthrough_interactions')
       .insert(interactionData)
 

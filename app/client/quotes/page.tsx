@@ -20,7 +20,6 @@ import {
   ChevronDown,
   ChevronUp,
   AlertCircle,
-  Star,
   MessageCircle,
   Calculator
 } from 'lucide-react'
@@ -69,7 +68,7 @@ const categoryConfig = {
 }
 
 export default function QuotesPage() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth() // TODO: Use user data for quote filtering
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [filteredQuotes, setFilteredQuotes] = useState<Quote[]>([])
   const [searchQuery, setSearchQuery] = useState('')

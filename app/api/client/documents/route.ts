@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/client'
+// import { createAdminClient } from '@/lib/supabase/client' // TODO: Implement document listing functionality
 import { DocumentService } from '@/services/document-service'
 
 // GET /api/client/documents - Get user documents
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createAdminClient()
+    // const supabase = createAdminClient() // TODO: Implement document functionality
     const { searchParams } = new URL(request.url)
     
     // Get user from auth header or session
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 // POST /api/client/documents - Upload document
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createAdminClient()
+    // const supabase = createAdminClient() // TODO: Implement document functionality
     
     // Get user from auth header or session
     const authHeader = request.headers.get('authorization')

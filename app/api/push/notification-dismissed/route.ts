@@ -17,7 +17,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Update notification status to dismissed
-    const { error } = await supabase.rpc('update_notification_status', {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any).rpc('update_notification_status', {
       p_notification_id: notificationId,
       p_status: 'dismissed'
     })

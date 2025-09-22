@@ -1,26 +1,23 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useAuth } from '@/hooks/useAuth'
 import ClientLayout from '@/components/client/ClientLayout'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
 import { 
   Star, 
   MessageCircle, 
   CheckCircle, 
   Clock, 
-  User, 
-  Calendar,
   ThumbsUp,
   ThumbsDown,
   Camera,
   Upload,
   Send,
   Heart,
-  Award,
-  Zap
+  Award
 } from 'lucide-react'
 
 interface Feedback {
@@ -70,7 +67,7 @@ const ratingCategories = [
 ]
 
 export default function FeedbackPage() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth() // TODO: Use user data for feedback submission
   const [jobsForFeedback, setJobsForFeedback] = useState<JobForFeedback[]>([])
   const [selectedJob, setSelectedJob] = useState<JobForFeedback | null>(null)
   const [feedback, setFeedback] = useState<Feedback>({
@@ -439,10 +436,12 @@ export default function FeedbackPage() {
                 <div className="mt-4 grid grid-cols-3 gap-2">
                   {photos.map((photo, index) => (
                     <div key={index} className="relative">
-                      <img
+                      <Image
                         src={URL.createObjectURL(photo)}
                         alt={`Feedback photo ${index + 1}`}
                         className="w-full h-24 object-cover rounded-lg"
+                        width={200}
+                        height={96}
                       />
                       <button
                         onClick={() => removePhoto(index)}

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/client'
+// import { createAdminClient } from '@/lib/supabase/client' // TODO: Implement document download functionality
 import { DocumentService } from '@/services/document-service'
 
 // GET /api/client/documents/[id]/download - Download document
@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createAdminClient()
+    // const supabase = createAdminClient() // TODO: Implement download functionality
     
     // Get user from auth header or session
     const authHeader = request.headers.get('authorization')

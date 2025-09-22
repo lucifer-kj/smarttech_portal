@@ -1,17 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { useToast } from '@/components/ui/Toast'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
-import { 
+import {
   Bell, 
   BellOff, 
   Settings, 
   Clock, 
   Smartphone, 
-  Monitor,
   CheckCircle,
   XCircle,
   AlertTriangle
@@ -41,7 +40,7 @@ export function NotificationPreferences({ userId }: NotificationPreferencesProps
   const [preferences, setPreferences] = useState<NotificationPreferences | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const { success, error, info } = useToast()
+  const { success, error } = useToast()
   const { 
     permission, 
     isSupported, 
@@ -116,11 +115,7 @@ export function NotificationPreferences({ userId }: NotificationPreferencesProps
     }
   ]
 
-  useEffect(() => {
-    loadPreferences()
-  }, [userId])
-
-  const loadPreferences = async () => {
+  const loadPreferences = useCallback(async () => {
     try {
       const response = await fetch('/api/push/preferences')
       if (response.ok) {
@@ -145,7 +140,11 @@ export function NotificationPreferences({ userId }: NotificationPreferencesProps
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [userId, error])
+
+  useEffect(() => {
+    loadPreferences()
+  }, [userId, loadPreferences])
 
   const savePreferences = async () => {
     if (!preferences) return
@@ -277,7 +276,7 @@ export function NotificationPreferences({ userId }: NotificationPreferencesProps
                 }
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                Permission: {permission.state}
+                Permission: {String(permission.state)}
               </p>
             </div>
             <Button

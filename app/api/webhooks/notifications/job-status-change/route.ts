@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/client'
+// import { createAdminClient } from '@/lib/supabase/client' // TODO: Implement webhook functionality
 import { NotificationTriggerService } from '@/services/notification-trigger-service'
 
 // POST /api/webhooks/notifications/job-status-change - Handle job status changes

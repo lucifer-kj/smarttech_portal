@@ -6,7 +6,7 @@ import { Calendar, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { Button } from "./Button";
 import { Input } from "./Input";
 
-export interface DatePickerProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
+export interface DatePickerProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value' | 'size'> {
   value?: Date | string;
   onChange?: (date: Date | null) => void;
   placeholder?: string;
@@ -24,7 +24,7 @@ const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
     value, 
     onChange, 
     placeholder = "Select date",
-    format = "MM/dd/yyyy",
+    // format = "MM/dd/yyyy", // TODO: Implement date formatting
     showTime = false,
     minDate,
     maxDate,

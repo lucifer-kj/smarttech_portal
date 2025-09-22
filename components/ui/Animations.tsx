@@ -7,7 +7,7 @@ import { useReducedMotion } from './Accessibility'
 export function useAnimation() {
   const [isVisible, setIsVisible] = useState(false)
   const [hasAnimated, setHasAnimated] = useState(false)
-  const elementRef = useRef<HTMLElement>(null)
+  const elementRef = useRef<HTMLDivElement>(null)
   const prefersReducedMotion = useReducedMotion()
 
   useEffect(() => {

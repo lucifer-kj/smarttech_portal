@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from "react";
+import NextImage from "next/image";
 import { cn } from "@/lib/utils/cn";
 import { Upload, X, File, Image, FileText, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "./Button";
@@ -127,7 +128,7 @@ const FileUpload = React.forwardRef<HTMLDivElement, FileUploadProps>(
       }
     };
 
-    const removeFile = (fileToRemove: File) => {
+    const removeFile = (fileToRemove: FileWithPreview) => {
       const updatedFiles = fileList.filter(file => file !== fileToRemove);
       setFileList(updatedFiles);
       onRemove?.(fileToRemove);
@@ -223,10 +224,12 @@ const FileUpload = React.forwardRef<HTMLDivElement, FileUploadProps>(
                 >
                   <div className="flex items-center space-x-3 flex-1 min-w-0">
                     {file.preview ? (
-                      <img
+                      <NextImage
                         src={file.preview}
                         alt={file.name}
                         className="h-10 w-10 object-cover rounded"
+                        width={40}
+                        height={40}
                       />
                     ) : (
                       getFileIcon(file)
@@ -283,9 +286,9 @@ export interface ImageUploadProps extends Omit<FileUploadProps, 'accept' | 'show
 
 const ImageUpload = React.forwardRef<HTMLDivElement, ImageUploadProps>(
   ({ 
-    aspectRatio = "16/9",
-    maxWidth = 1920,
-    maxHeight = 1080,
+    // aspectRatio = "16/9", // TODO: Implement aspect ratio validation
+    // maxWidth = 1920, // TODO: Implement max width validation
+    // maxHeight = 1080, // TODO: Implement max height validation
     ...props 
   }, ref) => {
     return (

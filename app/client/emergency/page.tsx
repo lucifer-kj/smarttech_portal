@@ -1,24 +1,22 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useAuth } from '@/hooks/useAuth'
 import ClientLayout from '@/components/client/ClientLayout'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { 
+import {
   AlertTriangle, 
   Phone, 
   MapPin, 
-  Clock, 
   MessageCircle, 
   Camera,
   Upload,
   CheckCircle,
   XCircle,
   User,
-  Home,
-  Zap,
   Shield
 } from 'lucide-react'
 
@@ -51,7 +49,7 @@ const priorityLevels = [
 ]
 
 export default function EmergencyPage() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth() // TODO: Use user data for emergency contact info
   const [request, setRequest] = useState<EmergencyRequest>({
     type: 'plumbing',
     priority: 'emergency',
@@ -365,10 +363,12 @@ export default function EmergencyPage() {
                   <div className="mt-4 grid grid-cols-2 md:grid-cols-5 gap-2">
                     {photos.map((photo, index) => (
                       <div key={index} className="relative">
-                        <img
+                        <Image
                           src={URL.createObjectURL(photo)}
                           alt={`Emergency photo ${index + 1}`}
                           className="w-full h-20 object-cover rounded-lg"
+                          width={200}
+                          height={80}
                         />
                         <button
                           onClick={() => removePhoto(index)}

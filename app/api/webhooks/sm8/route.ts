@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const webhookSecret = process.env.WEBHOOK_SECRET;
     const timestamp = request.headers.get('x-servicem8-timestamp') || '';
     if (webhookSecret && signature) {
-      const isValid = verifyWebhookSignature(body, signature, webhookSecret, timestamp);
+      const isValid = verifyWebhookSignature(body, signature, webhookSecret);
       if (!isValid) {
         await updateWebhookEventStatus(webhookEvent.id, 'failed', 'Invalid signature');
         return NextResponse.json(
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
  * Verify webhook signature using HMAC-SHA256
  */
 function verifyWebhookSignature(
-body: string, signature: string, secret: string, _timestamp?: string): boolean {
+body: string, signature: string, secret: string): boolean {
   try {
     // ServiceM8 typically uses HMAC-SHA256
     const expectedSignature = crypto

@@ -1,5 +1,16 @@
 import webpush from 'web-push'
 
+// Define specific types for notification data
+export interface NotificationData {
+  jobId?: string
+  quoteId?: string
+  userId?: string
+  type?: string
+  action?: string
+  url?: string
+  [key: string]: string | number | boolean | undefined
+}
+
 export interface VapidKeys {
   publicKey: string
   privateKey: string
@@ -19,7 +30,7 @@ export interface NotificationPayload {
   icon?: string
   badge?: string
   image?: string
-  data?: Record<string, any>
+  data?: NotificationData
   actions?: Array<{
     action: string
     title: string
@@ -40,7 +51,7 @@ export interface NotificationTemplate {
   body: string
   icon?: string
   badge?: string
-  data?: Record<string, any>
+  data?: NotificationData
   actions?: Array<{
     action: string
     title: string

@@ -1,9 +1,21 @@
-import { supabase, createAdminClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/types/database'
 
 type Document = Database['public']['Tables']['documents']['Row']
 type DocumentInsert = Database['public']['Tables']['documents']['Insert']
-type DocumentUpdate = Database['public']['Tables']['documents']['Update']
+// type DocumentUpdate = Database['public']['Tables']['documents']['Update'] // TODO: Implement document updates
+
+// Type for document metadata
+export interface DocumentMetadata {
+  fileName: string
+  fileSize: number
+  mimeType: string
+  fileExtension: string
+}
+
+// Type for database RPC responses
+// Row type returned by the get_user_documents RPC
+type GetUserDocumentsRow = Database['public']['Functions']['get_user_documents']['Returns'][number]
 
 export interface DocumentUpload {
   file: File
@@ -20,6 +32,9 @@ export interface DocumentWithUrl extends Document {
   downloadUrl?: string
   previewUrl?: string
 }
+
+// Lightweight type used for listing documents via RPC
+export type DocumentListItem = GetUserDocumentsRow & { downloadUrl: string }
 
 export class DocumentService {
   private static readonly STORAGE_BUCKET = 'documents'
@@ -86,6 +101,8 @@ export class DocumentService {
       }
     }
 
+    // Use a lenient cast here because generated Database types may not include 'documents' correctly
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: document, error: dbError } = await (supabase as any)
       .from('documents')
       .insert(documentData)
@@ -103,10 +120,10 @@ export class DocumentService {
     }
 
     // Get download URL
-    const downloadUrl = await this.getDownloadUrl(document.id)
+    const downloadUrl = await this.getDownloadUrl((document as Document).id)
 
     return {
-      ...document,
+      ...(document as Document),
       downloadUrl
     }
   }
@@ -122,11 +139,11 @@ export class DocumentService {
       limit?: number
       offset?: number
     } = {}
-  ): Promise<DocumentWithUrl[]> {
+  ): Promise<DocumentListItem[]> {
     const { data, error } = await (supabase as any).rpc('get_user_documents', {
       p_user_id: userId,
       p_job_id: options.jobId || null,
-      p_category: options.category || null,
+      p_category: (options.category as unknown as string) || null,
       p_limit: options.limit || 50,
       p_offset: options.offset || 0
     })
@@ -136,8 +153,8 @@ export class DocumentService {
     }
 
     // Get download URLs for each document
-    const documentsWithUrls = await Promise.all(
-      (data || []).map(async (doc: any) => ({
+    const documentsWithUrls: DocumentListItem[] = await Promise.all(
+      ((data || []) as GetUserDocumentsRow[]).map(async (doc) => ({
         ...doc,
         downloadUrl: await this.getDownloadUrl(doc.id)
       }))
@@ -150,7 +167,7 @@ export class DocumentService {
    * Get a single document by ID
    */
   static async getDocument(documentId: string): Promise<DocumentWithUrl | null> {
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('documents')
       .select('*')
       .eq('id', documentId)
@@ -175,19 +192,19 @@ export class DocumentService {
    * Get download URL for a document
    */
   static async getDownloadUrl(documentId: string): Promise<string> {
-    const { data: document } = await (supabase as any)
+    const { data: documentRow } = (await supabase
       .from('documents')
       .select('file_path')
       .eq('id', documentId)
-      .single()
+      .single()) as unknown as { data: Pick<Document, 'file_path'> | null }
 
-    if (!document) {
+    if (!documentRow) {
       throw new Error('Document not found')
     }
 
     const { data } = await supabase.storage
       .from(this.STORAGE_BUCKET)
-      .createSignedUrl(document.file_path, 3600) // 1 hour expiry
+      .createSignedUrl(documentRow.file_path, 3600) // 1 hour expiry
 
     return data?.signedUrl || ''
   }
@@ -262,23 +279,22 @@ export class DocumentService {
     }
 
     // Create new version using database function
-    const { data: newDocumentId, error: dbError } = await (supabase as any).rpc(
-      'create_document_version',
-      {
-        p_parent_document_id: parentDocumentId,
-        p_file_path: uploadData.path,
-        p_file_name: newFile.name,
-        p_file_size: newFile.size,
-        p_mime_type: newFile.type,
-        p_user_id: userId
-      }
-    )
+    const { data: newDocumentIdRaw, error: dbError } = await (supabase as any).rpc('create_document_version', {
+      p_parent_document_id: parentDocumentId,
+      p_file_path: uploadData.path,
+      p_file_name: newFile.name,
+      p_file_size: newFile.size,
+      p_mime_type: newFile.type,
+      p_user_id: userId
+    })
 
     if (dbError) {
       // Clean up uploaded file
       await supabase.storage.from(this.STORAGE_BUCKET).remove([filePath])
       throw new Error(`Database insert failed: ${dbError.message}`)
     }
+
+    const newDocumentId = newDocumentIdRaw as unknown as string
 
     // Get the new document
     const newDocument = await this.getDocument(newDocumentId)
@@ -314,7 +330,7 @@ export class DocumentService {
     }
 
     // Delete from database
-    const { error: dbError } = await (supabase as any)
+    const { error: dbError } = await supabase
       .from('documents')
       .delete()
       .eq('id', documentId)
@@ -347,12 +363,13 @@ export class DocumentService {
         user_id: userId,
         signature_data: signatureData,
         signature_type: signatureType,
-        ip_address: null, // Will be set by the client
+        signed_at: new Date().toISOString(),
+        ip_address: null,
         metadata: {
           signedAt: new Date().toISOString(),
           signatureMethod: 'web_portal'
         }
-      })
+      } as Database['public']['Tables']['document_signatures']['Insert'])
 
     if (error) {
       throw new Error(`Signature failed: ${error.message}`)
@@ -364,7 +381,7 @@ export class DocumentService {
       .update({
         signed_at: new Date().toISOString(),
         signed_by: userId
-      })
+      } as Database['public']['Tables']['documents']['Update'])
       .eq('id', documentId)
 
     if (updateError) {
@@ -454,7 +471,7 @@ export class DocumentService {
     documentCount: number
     categoryBreakdown: Record<string, { count: number; size: number }>
   }> {
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('documents')
       .select('file_size, category')
       .eq('user_id', userId)
@@ -463,10 +480,10 @@ export class DocumentService {
       throw new Error(`Failed to fetch storage usage: ${error.message}`)
     }
 
-    const totalSize = (data || []).reduce((sum: number, doc: any) => sum + doc.file_size, 0)
+    const totalSize = (data || []).reduce((sum: number, doc: Document) => sum + doc.file_size, 0)
     const documentCount = (data || []).length
 
-    const categoryBreakdown = (data || []).reduce((acc: Record<string, { count: number; size: number }>, doc: any) => {
+    const categoryBreakdown = (data || []).reduce((acc: Record<string, { count: number; size: number }>, doc: Document) => {
       if (!acc[doc.category]) {
         acc[doc.category] = { count: 0, size: 0 }
       }

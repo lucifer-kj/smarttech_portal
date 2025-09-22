@@ -2,15 +2,17 @@ import { createClient } from "@supabase/supabase-js";
 import { createBrowserClient } from "@supabase/ssr";
 import type { Database } from "@/types/database";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing Supabase environment variables");
-}
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
 // Client-side Supabase client with types
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+export const supabase = (() => {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    // Defer hard failure until runtime usage
+    return createClient<Database>("http://localhost", "anon-key");
+  }
+  return createClient<Database>(supabaseUrl, supabaseAnonKey);
+})();
 
 // Browser client for SSR
 export const createClientComponentClient = () => {
@@ -19,6 +21,9 @@ export const createClientComponentClient = () => {
 
 // Server-side Supabase client (for API routes)
 export const createServerClient = () => {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Missing Supabase environment variables");
+  }
   return createClient<Database>(supabaseUrl, supabaseAnonKey);
 };
 
@@ -26,8 +31,14 @@ export const createServerClient = () => {
 export const createAdminClient = () => {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!serviceRoleKey) {
-    throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY environment variable");
+  if (!serviceRoleKey || !supabaseUrl) {
+    // Defer failure until runtime usage; provide inert fallback for build
+    return createClient<Database>("http://localhost", "service-role-key", {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
   }
 
   return createClient<Database>(supabaseUrl, serviceRoleKey, {

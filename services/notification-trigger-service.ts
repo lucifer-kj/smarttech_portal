@@ -1,5 +1,5 @@
-import { createAdminClient } from '@/lib/supabase/client'
-import { pushNotificationService } from '@/services/push-notification-service'
+// import { createAdminClient } from '@/lib/supabase/client' // TODO: Implement admin client usage
+import { pushNotificationService, type NotificationData } from '@/services/push-notification-service'
 import { PushSubscriptionService } from '@/services/push-subscription-service'
 
 export interface NotificationTrigger {
@@ -7,7 +7,7 @@ export interface NotificationTrigger {
   type: string
   title: string
   body: string
-  data?: Record<string, any>
+  data?: NotificationData
   templateId?: string
   templateVariables?: Record<string, string>
 }
@@ -385,7 +385,7 @@ export class NotificationTriggerService {
     title: string,
     body: string,
     userId: string,
-    data?: Record<string, any>
+    data?: NotificationData
   ): Promise<boolean> {
     try {
       // Check if user should receive marketing notifications
@@ -447,7 +447,7 @@ export class NotificationTriggerService {
   /**
    * Core notification sending method
    */
-  private static async sendNotification(trigger: NotificationTrigger): Promise<boolean> {
+  static async sendNotification(trigger: NotificationTrigger): Promise<boolean> {
     try {
       // Initialize push notification service
       await pushNotificationService.initialize()

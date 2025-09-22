@@ -1,7 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/client'
+import { NextResponse } from 'next/server'
 import { pushNotificationService } from '@/services/push-notification-service'
-import { PushSubscriptionService } from '@/services/push-subscription-service'
 
 // GET /api/push/vapid-public-key - Get VAPID public key
 export async function GET() {

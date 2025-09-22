@@ -31,7 +31,7 @@ export default function WebhookDashboard() {
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const { success, error, info } = useToast();
 
-  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
     if (type === 'success') {
       success(message);
     } else if (type === 'error') {
@@ -39,7 +39,7 @@ export default function WebhookDashboard() {
     } else {
       info(message);
     }
-  };
+  }, [success, error, info]);
 
   // Fetch webhook events
   const fetchEvents = useCallback(async (status?: string) => {
@@ -61,7 +61,7 @@ export default function WebhookDashboard() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
   // Fetch webhook statistics
   const fetchStats = useCallback(async () => {
@@ -77,7 +77,7 @@ export default function WebhookDashboard() {
     } catch {
       showToast('Failed to fetch webhook statistics', 'error');
     }
-  }, []);
+  }, [showToast]);
 
   // Retry failed events
   const retryFailedEvents = async () => {

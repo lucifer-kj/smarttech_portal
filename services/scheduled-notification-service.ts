@@ -1,6 +1,9 @@
 import { createAdminClient } from '@/lib/supabase/client'
 import { NotificationTriggerService } from './notification-trigger-service'
 
+// Import the notification data type from push notification service
+import type { NotificationData } from './push-notification-service'
+
 export interface ScheduledNotification {
   id: string
   userId: string
@@ -8,7 +11,7 @@ export interface ScheduledNotification {
   title: string
   body: string
   scheduledFor: Date
-  data?: Record<string, any>
+  data?: NotificationData
   templateId?: string
   templateVariables?: Record<string, string>
   sent: boolean
@@ -27,7 +30,7 @@ export class ScheduledNotificationService {
     title: string,
     body: string,
     scheduledFor: Date,
-    data?: Record<string, any>,
+    data?: NotificationData,
     templateId?: string,
     templateVariables?: Record<string, string>
   ): Promise<string> {
@@ -46,7 +49,7 @@ export class ScheduledNotificationService {
       created_at: new Date().toISOString()
     }
 
-    const { data, error } = await supabase
+    const { data: result, error } = await (supabase as any)
       .from(this.TABLE_NAME)
       .insert(notificationData)
       .select()
@@ -56,7 +59,7 @@ export class ScheduledNotificationService {
       throw new Error(`Failed to schedule notification: ${error.message}`)
     }
 
-    return data.id
+    return result.id
   }
 
   /**
@@ -188,7 +191,7 @@ export class ScheduledNotificationService {
       let failed = 0
       const errors: string[] = []
 
-      for (const notification of notifications) {
+      for (const notification of (notifications as any[])) {
         try {
           // Send the notification
           const success = await NotificationTriggerService.sendNotification({
@@ -202,7 +205,7 @@ export class ScheduledNotificationService {
           })
 
           // Mark as sent
-          await supabase
+          await (supabase as any)
             .from(this.TABLE_NAME)
             .update({ sent: true, sent_at: new Date().toISOString() })
             .eq('id', notification.id)
@@ -278,7 +281,7 @@ export class ScheduledNotificationService {
         throw new Error(`Failed to fetch scheduled notifications: ${error.message}`)
       }
 
-      return (data || []).map(notification => ({
+      return ((data || []) as any[]).map(notification => ({
         id: notification.id,
         userId: notification.user_id,
         type: notification.notification_type,

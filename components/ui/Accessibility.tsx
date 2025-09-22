@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useCallback, ReactNode } from 'react'
+import { useEffect, useRef, useCallback, useState, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
 // Focus Management Hook
@@ -328,12 +328,19 @@ export function AccessibleButton({
   )
 }
 
-// Focus Visible Polyfill
+// Focus Visible Hook
 export function useFocusVisible() {
   useEffect(() => {
     // Add focus-visible polyfill if needed
-    if (typeof window !== 'undefined' && !window.CSS?.supports?.('selector(:focus-visible)')) {
-      import('focus-visible')
+    if (
+      typeof window !== 'undefined' &&
+      !(window.CSS && window.CSS.supports && window.CSS.supports('selector(:focus-visible)'))
+    ) {
+      // Dynamically import only in browser, ignore type error if no types
+      // @ts-expect-error - focus-visible module may not have types
+      import('focus-visible').catch(() => {
+        // Ignore if module not found or fails to load
+      })
     }
   }, [])
 }
@@ -380,13 +387,20 @@ export function useHighContrastMode() {
         const mediaQuery = window.matchMedia('(prefers-contrast: high)')
         setIsHighContrast(mediaQuery.matches)
         
-        mediaQuery.addEventListener('change', (e) => {
+        const handleChange = (e: MediaQueryListEvent) => {
           setIsHighContrast(e.matches)
-        })
+        }
+
+        mediaQuery.addEventListener('change', handleChange)
+        
+        return () => {
+          mediaQuery.removeEventListener('change', handleChange)
+        }
       }
     }
 
-    checkHighContrast()
+    const cleanup = checkHighContrast()
+    return cleanup
   }, [])
 
   return isHighContrast
@@ -401,9 +415,15 @@ export function useReducedMotion() {
       const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
       setPrefersReducedMotion(mediaQuery.matches)
       
-      mediaQuery.addEventListener('change', (e) => {
+      const handleChange = (e: MediaQueryListEvent) => {
         setPrefersReducedMotion(e.matches)
-      })
+      }
+
+      mediaQuery.addEventListener('change', handleChange)
+      
+      return () => {
+        mediaQuery.removeEventListener('change', handleChange)
+      }
     }
   }, [])
 
@@ -419,9 +439,15 @@ export function useColorScheme() {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
       setColorScheme(mediaQuery.matches ? 'dark' : 'light')
       
-      mediaQuery.addEventListener('change', (e) => {
+      const handleChange = (e: MediaQueryListEvent) => {
         setColorScheme(e.matches ? 'dark' : 'light')
-      })
+      }
+
+      mediaQuery.addEventListener('change', handleChange)
+      
+      return () => {
+        mediaQuery.removeEventListener('change', handleChange)
+      }
     }
   }, [])
 

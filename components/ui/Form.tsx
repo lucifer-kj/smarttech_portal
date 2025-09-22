@@ -97,16 +97,21 @@ const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
         )}
 
         <div className="relative">
-          {React.cloneElement(children as React.ReactElement, {
-            disabled,
-            className: cn(
-              (children as React.ReactElement).props.className,
+          {(() => {
+            const child = children as React.ReactElement<{ disabled?: boolean; className?: string }>
+            const nextProps: { disabled?: boolean; className?: string } = {}
+            if (Object.prototype.hasOwnProperty.call(child.props, 'disabled')) {
+              nextProps.disabled = disabled
+            }
+            nextProps.className = cn(
+              child.props.className,
               error && "border-danger-300 focus:border-danger-500 focus:ring-danger-500",
               success && "border-success-300 focus:border-success-500 focus:ring-success-500",
               warning && "border-warning-300 focus:border-warning-500 focus:ring-warning-500",
               info && "border-info-300 focus:border-info-500 focus:ring-info-500"
             )
-          })}
+            return React.cloneElement(child, nextProps)
+          })()}
         </div>
 
         {(error || success || warning || info) && (
@@ -130,27 +135,27 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
 }
 
 const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, options, placeholder, searchable = false, multiple = false, ...props }, ref) => {
-    const [isOpen, setIsOpen] = React.useState(false);
-    const [searchTerm, setSearchTerm] = React.useState("");
-    const [selectedValues, setSelectedValues] = React.useState<string[]>([]);
+  ({ className, options, placeholder, /* searchable = false, */ multiple = false, ...props }, ref) => {
+    // const [isOpen, setIsOpen] = React.useState(false); // TODO: Implement dropdown state
+    // const [searchTerm, setSearchTerm] = React.useState(""); // TODO: Implement search functionality
+    // const [selectedValues, setSelectedValues] = React.useState<string[]>([]); // TODO: Implement multi-select
 
-    const filteredOptions = options.filter(option =>
-      option.label.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // const filteredOptions = options.filter(option => // TODO: Implement option filtering
+    //   option.label.toLowerCase().includes(searchTerm.toLowerCase())
+    // );
 
-    const handleSelect = (value: string) => {
-      if (multiple) {
-        setSelectedValues(prev => 
-          prev.includes(value) 
-            ? prev.filter(v => v !== value)
-            : [...prev, value]
-        );
-      } else {
-        setSelectedValues([value]);
-        setIsOpen(false);
-      }
-    };
+    // const handleSelect = (value: string) => { // TODO: Implement selection handling
+    //   if (multiple) {
+    //     setSelectedValues(prev => 
+    //       prev.includes(value) 
+    //         ? prev.filter(v => v !== value)
+    //         : [...prev, value]
+    //     );
+    //   } else {
+    //     setSelectedValues([value]);
+    //     setIsOpen(false);
+    //   }
+    // };
 
     return (
       <div className="relative">
@@ -277,7 +282,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
 Checkbox.displayName = "Checkbox";
 
 // Radio Group Component
-export interface RadioGroupProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface RadioGroupProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> {
   options: { value: string; label: string; description?: string; disabled?: boolean }[];
   value?: string;
   onChange?: (value: string) => void;
@@ -343,7 +348,7 @@ const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(
 RadioGroup.displayName = "RadioGroup";
 
 // Switch Component
-export interface SwitchProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface SwitchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
   description?: string;
   size?: "sm" | "default" | "lg";

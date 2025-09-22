@@ -87,7 +87,7 @@ export function useAuth() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [setUser, setSession, setLoading]);
+  }, [setUser, setSession, setLoading, isHydrated]);
 
   return {
     user,

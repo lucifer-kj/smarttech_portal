@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/client'
+// import { createAdminClient } from '@/lib/supabase/client' // TODO: Implement document management functionality
 import { DocumentService } from '@/services/document-service'
 
 // GET /api/client/documents/[id] - Get single document
@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createAdminClient()
+    // const supabase = createAdminClient() // TODO: Implement document functionality
     
     // Get user from auth header or session
     const authHeader = request.headers.get('authorization')
@@ -39,7 +39,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createAdminClient()
+    // const supabase = createAdminClient() // TODO: Implement document functionality
     
     // Get user from auth header or session
     const authHeader = request.headers.get('authorization')

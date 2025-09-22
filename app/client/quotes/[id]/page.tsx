@@ -7,19 +7,14 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { 
   FileText, 
-  DollarSign, 
-  Calendar, 
   Clock, 
   CheckCircle, 
   XCircle, 
   AlertCircle,
   ArrowLeft,
   Download,
-  Eye,
   Calculator,
-  Edit,
   Share,
-  Star,
   User,
   Phone,
   MessageCircle,
@@ -87,7 +82,7 @@ const categoryConfig = {
 }
 
 export default function QuoteDetailPage() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth() // TODO: Use user data for quote approval
   const params = useParams()
   const quoteId = params.id as string
   

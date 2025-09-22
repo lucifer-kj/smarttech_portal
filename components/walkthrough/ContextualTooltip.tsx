@@ -1,11 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef, ReactNode } from 'react'
-import { 
+import { useState, useEffect, useRef, ReactNode, useCallback } from 'react'
+import {
   HelpCircle, 
   X, 
-  ChevronUp, 
-  ChevronDown, 
   ChevronLeft, 
   ChevronRight,
   Lightbulb,
@@ -84,11 +82,11 @@ export function ContextualTooltip({
   onVisibilityChange
 }: ContextualTooltipProps) {
   const [visible, setVisible] = useState(isVisible)
-  const [position, setPosition] = useState(config.position || 'top')
+  const [position] = useState(config.position || 'top') // setPosition reserved for future position management
   const [actualPosition, setActualPosition] = useState(position)
   const tooltipRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLDivElement>(null)
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const typeConfig = tooltipTypes[config.type || 'info']
   const Icon = typeConfig.icon
@@ -97,7 +95,7 @@ export function ContextualTooltip({
     if (isVisible !== visible) {
       setVisible(isVisible)
     }
-  }, [isVisible])
+  }, [isVisible, visible])
 
   useEffect(() => {
     if (visible && config.onShow) {
@@ -112,9 +110,10 @@ export function ContextualTooltip({
     if (visible && tooltipRef.current && triggerRef.current) {
       calculatePosition()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible])
 
-  const calculatePosition = () => {
+  const calculatePosition = useCallback(() => {
     if (!tooltipRef.current || !triggerRef.current) return
 
     const tooltip = tooltipRef.current
@@ -149,7 +148,7 @@ export function ContextualTooltip({
     }
 
     setActualPosition(newPosition)
-  }
+  }, [position])
 
   const showTooltip = () => {
     if (timeoutRef.current) {
@@ -315,7 +314,7 @@ export function GuidedTour({
 }: GuidedTourProps) {
   const [step, setStep] = useState(currentStep)
   const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null)
-  const overlayRef = useRef<HTMLDivElement>(null)
+  // const overlayRef = useRef<HTMLDivElement>(null) // TODO: Implement overlay management
 
   const currentStepData = steps[step]
   const progress = ((step + 1) / steps.length) * 100

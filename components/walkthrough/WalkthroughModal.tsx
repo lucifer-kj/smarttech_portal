@@ -1,26 +1,21 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { 
+import {
   X, 
   ChevronLeft, 
-  ChevronRight, 
+  ChevronRight,
   Play, 
   Pause, 
-  RotateCcw,
   SkipForward,
   CheckCircle,
-  Circle,
-  ArrowRight,
-  ArrowLeft,
   Home,
   Briefcase,
   FileText,
-  Users,
-  Settings,
-  HelpCircle
+  Settings
 } from 'lucide-react'
 
 export interface WalkthroughStep {
@@ -412,10 +407,12 @@ export function WalkthroughModal({
               {/* Step Image/Video */}
               {currentStepData.image && (
                 <div className="rounded-lg overflow-hidden bg-gray-100">
-                  <img 
+                  <Image 
                     src={currentStepData.image} 
                     alt={currentStepData.title}
                     className="w-full h-48 object-cover"
+                    width={400}
+                    height={192}
                   />
                 </div>
               )}

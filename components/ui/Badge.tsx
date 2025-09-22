@@ -55,7 +55,7 @@ export interface StatusBadgeProps extends Omit<BadgeProps, 'variant'> {
 }
 
 const StatusBadge = React.forwardRef<HTMLDivElement, StatusBadgeProps>(
-  ({ status, className, ...props }, ref) => {
+  ({ status, className, ...props }, _ref) => {
     const statusVariants = {
       pending: "warning",
       approved: "success",
@@ -69,7 +69,6 @@ const StatusBadge = React.forwardRef<HTMLDivElement, StatusBadgeProps>(
 
     return (
       <Badge
-        ref={ref}
         variant={statusVariants[status]}
         className={cn(className)}
         {...props}
@@ -89,14 +88,13 @@ export interface NotificationBadgeProps extends Omit<BadgeProps, 'variant' | 'ch
 }
 
 const NotificationBadge = React.forwardRef<HTMLDivElement, NotificationBadgeProps>(
-  ({ count, max = 99, showZero = false, className, ...props }, ref) => {
+  ({ count, max = 99, showZero = false, className, ...props }, _ref) => {
     if (count === 0 && !showZero) return null;
 
     const displayCount = count > max ? `${max}+` : count.toString();
 
     return (
       <Badge
-        ref={ref}
         variant="destructive"
         size="sm"
         className={cn("min-w-[20px] h-5 flex items-center justify-center", className)}
@@ -115,7 +113,7 @@ export interface PriorityBadgeProps extends Omit<BadgeProps, 'variant'> {
 }
 
 const PriorityBadge = React.forwardRef<HTMLDivElement, PriorityBadgeProps>(
-  ({ priority, className, ...props }, ref) => {
+  ({ priority, className, ...props }, _ref) => {
     const priorityVariants = {
       low: "secondary",
       medium: "info",
@@ -134,7 +132,6 @@ const PriorityBadge = React.forwardRef<HTMLDivElement, PriorityBadgeProps>(
 
     return (
       <Badge
-        ref={ref}
         variant={priorityVariants[priority]}
         className={cn(className)}
         {...props}

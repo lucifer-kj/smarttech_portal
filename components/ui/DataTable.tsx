@@ -15,7 +15,7 @@ import {
   VisibilityState,
   PaginationState,
 } from '@tanstack/react-table';
-import { ChevronDown, ChevronLeft, ChevronRight, Search, Filter, Download, MoreHorizontal } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Search, Filter, Download } from 'lucide-react';
 import { Button } from './Button';
 import { Input } from './Input';
 import { Badge } from './Badge';
@@ -88,14 +88,27 @@ function DataTable<TData, TValue>({
       onExport(data);
     } else {
       // Default CSV export
+      const getHeaderText = (col: ColumnDef<TData, TValue>): string => {
+        if (typeof col.header === 'string') return col.header
+        return ''
+      }
+
+      const getAccessorKey = (col: ColumnDef<TData, TValue>): string | null => {
+        return (col as unknown as { accessorKey?: unknown }).accessorKey &&
+          typeof (col as unknown as { accessorKey?: unknown }).accessorKey === 'string'
+          ? ((col as unknown as { accessorKey: string }).accessorKey)
+          : null
+      }
+
       const csvContent = [
         // Headers
-        columns.map(col => col.header).join(','),
+        columns.map(col => getHeaderText(col)).join(','),
         // Data rows
         ...data.map(row => 
           columns.map(col => {
-            const value = col.accessorKey ? (row as any)[col.accessorKey] : '';
-            return `"${value}"`;
+            const key = getAccessorKey(col)
+            const value = key ? (row as Record<string, unknown>)[key] : ''
+            return `"${String(value ?? '')}"`
           }).join(',')
         )
       ].join('\n');
@@ -286,7 +299,7 @@ export const createStatusColumn = <TData, TValue>(
   id: string,
   header: string,
   accessorKey: keyof TData,
-  statusMap?: Record<string, { label: string; variant: "default" | "success" | "warning" | "danger" | "info" | "emergency" }>
+  statusMap?: Record<string, { label: string; variant: "default" | "success" | "warning" | "destructive" | "info" | "emergency" }>
 ): ColumnDef<TData, TValue> => ({
   id,
   header,

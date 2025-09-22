@@ -7,14 +7,13 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { PasswordChangeForm } from '@/components/auth/PasswordChangeForm'
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
   Calendar, 
   Shield, 
-  Bell, 
   Settings,
   Edit,
   Save,
@@ -25,7 +24,6 @@ import {
   EyeOff,
   Key,
   Smartphone,
-  Globe,
   Clock
 } from 'lucide-react'
 

@@ -148,6 +148,10 @@ const ToastContext = React.createContext<ToastContextType | undefined>(undefined
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = React.useState<ToastData[]>([]);
 
+  const removeToast = React.useCallback((id: string) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  }, []);
+
   const addToast = React.useCallback((toast: Omit<ToastData, 'id'>) => {
     const id = Math.random().toString(36).substr(2, 9);
     const newToast = { ...toast, id };
@@ -159,11 +163,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setTimeout(() => {
       removeToast(id);
     }, duration);
-  }, []);
-
-  const removeToast = React.useCallback((id: string) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
-  }, []);
+  }, [removeToast]);
 
   return (
     <ToastContext.Provider value={{ toasts, addToast, removeToast }}>
@@ -199,7 +199,37 @@ export const useToast = () => {
   if (!context) {
     throw new Error("useToast must be used within a ToastProvider");
   }
-  return context;
+  
+  const success = React.useCallback((message: string, title?: string) => {
+    context.addToast({
+      title: title || 'Success',
+      description: message,
+      variant: 'success'
+    });
+  }, [context]);
+  
+  const error = React.useCallback((message: string, title?: string) => {
+    context.addToast({
+      title: title || 'Error',
+      description: message,
+      variant: 'destructive'
+    });
+  }, [context]);
+  
+  const info = React.useCallback((message: string, title?: string) => {
+    context.addToast({
+      title: title || 'Info',
+      description: message,
+      variant: 'info'
+    });
+  }, [context]);
+  
+  return {
+    ...context,
+    success,
+    error,
+    info
+  };
 };
 
 export {
