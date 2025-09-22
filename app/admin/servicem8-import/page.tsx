@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { SimpleToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/ui/Toast';
 
 interface SyncResult {
   success: boolean;
@@ -19,15 +19,16 @@ interface SyncResult {
 export default function ServiceM8DataImport() {
   const [isLoading, setIsLoading] = useState(false);
   const [lastSyncResult, setLastSyncResult] = useState<SyncResult | null>(null);
-  const [toast, setToast] = useState<{
-    show: boolean;
-    message: string;
-    type: 'success' | 'error' | 'info';
-  }>({ show: false, message: '', type: 'info' });
+  const { success, error, info } = useToast();
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 5000);
+    if (type === 'success') {
+      success(message);
+    } else if (type === 'error') {
+      error(message);
+    } else {
+      info(message);
+    }
   };
 
   const testConnection = async () => {
@@ -201,15 +202,6 @@ export default function ServiceM8DataImport() {
           </p>
         </div>
       </Card>
-
-      {/* Toast Notification */}
-      {toast.show && (
-        <SimpleToast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(prev => ({ ...prev, show: false }))}
-        />
-      )}
     </div>
   );
 }

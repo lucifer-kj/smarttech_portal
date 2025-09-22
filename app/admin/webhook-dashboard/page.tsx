@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { SimpleToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/ui/Toast';
 
 interface WebhookEvent {
   id: string;
@@ -29,15 +29,16 @@ export default function WebhookDashboard() {
   const [stats, setStats] = useState<WebhookStats | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>('');
-  const [toast, setToast] = useState<{
-    show: boolean;
-    message: string;
-    type: 'success' | 'error' | 'info';
-  }>({ show: false, message: '', type: 'info' });
+  const { success, error, info } = useToast();
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 5000);
+    if (type === 'success') {
+      success(message);
+    } else if (type === 'error') {
+      error(message);
+    } else {
+      info(message);
+    }
   };
 
   // Fetch webhook events
@@ -362,15 +363,6 @@ export default function WebhookDashboard() {
           </div>
         )}
       </Card>
-
-      {/* Toast Notification */}
-      {toast.show && (
-        <SimpleToast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(prev => ({ ...prev, show: false }))}
-        />
-      )}
     </div>
   );
 }
