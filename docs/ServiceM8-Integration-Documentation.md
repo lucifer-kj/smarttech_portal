@@ -1,5 +1,10 @@
 # ServiceM8 Integration Documentation
 
+> Status & Alignment (Sep 2025)
+> - Implemented in project (Phases 4, 5 complete): API client, sync service, admin tools, webhook-driven realtime updates
+> - Current work (Phase 10): Scheduled reconciliation job and sync health monitoring pending
+> - This document has been updated to reflect implemented webhooks and correct endpoint listings
+
 ## Overview
 
 The ServiceM8 integration provides a comprehensive API client and data synchronization system for the SmartTech Client Portal. This integration allows the portal to fetch, sync, and manage data from ServiceM8, including jobs, quotes, clients, staff, and related information.
@@ -73,7 +78,7 @@ The ServiceM8 integration provides a comprehensive API client and data synchroni
 ### Data Management
 
 - `GET /api/servicem8/jobs` - Get jobs for a company
-- `POST /api/servicem8/jobs` - Get quotes for a company
+- `GET /api/servicem8/quotes` - Get quotes for a company
 - `POST /api/servicem8/quotes` - Approve a quote
 - `DELETE /api/servicem8/quotes` - Reject a quote
 
@@ -201,7 +206,7 @@ const approveResponse = await fetch('/api/servicem8/quotes', {
 
 3. **Ongoing Sync**
    - Process webhook events for real-time updates
-   - Run scheduled reconciliation jobs
+   - Run scheduled reconciliation jobs (Pending in Phase 10)
    - Handle sync errors and retries
 
 4. **Quote Management**
@@ -345,12 +350,12 @@ GET /api/servicem8/test-integration?type=jobs&company_uuid=uuid
 
 ### Planned Features
 
-- **Webhook Processing**: Real-time webhook event handling
 - **Advanced Filtering**: Enhanced query capabilities
 - **Bulk Operations**: Batch processing for large datasets
 - **Analytics**: ServiceM8 data analytics and reporting
 - **Mobile Sync**: Offline sync capabilities
 - **Custom Fields**: Support for custom ServiceM8 fields
+- **Scheduled Reconciliation**: Periodic integrity checks and drift correction (Phase 10)
 
 ### Integration Opportunities
 
@@ -371,7 +376,12 @@ For issues or questions regarding the ServiceM8 integration:
 
 ## Changelog
 
-### Version 1.0.0 (Current)
+### Version 1.1.0 (Current)
+- Webhook system integrated (real-time updates) and documented alignment
+- Corrected API endpoint listings for quotes
+- Clarified Phase 10 pending reconciliation work
+
+### Version 1.0.0
 - Initial ServiceM8 integration implementation
 - API client with authentication and rate limiting
 - Data synchronization service

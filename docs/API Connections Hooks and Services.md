@@ -1,5 +1,9 @@
 # Enhanced API Connections, Hooks, and Services
 
+> Status & Alignment (Sep 2025)
+> - Implemented: Auth APIs/hooks, Admin portal APIs, Client portal core (jobs/quotes/docs/feedback), Webhooks, Realtime, Push basics
+> - Planned/In Progress: Reconciliation cron (Phase 10), Advanced analytics endpoints, Maintenance & Emergency full suite, Mobile integrations
+
 ## 1. 🔑 Authentication & Security
 
 ### API Routes
@@ -14,6 +18,8 @@
 ### Services
 * **Supabase Auth SDK** → Magic Link + Password Auth.
 * **RLS Policies** → enforce row-level access + `is_banned=false`.
+
+Status: Implemented ✅
 
 ---
 
@@ -40,6 +46,8 @@
 * **Log Service** → fetch + filter logs from `audit_logs` and `webhook_events`.
 * **Analytics Service** → generate reports and dashboard metrics.
 * **Maintenance Service** → handle preventive maintenance and service contracts.
+
+Status: Implemented core users/logs; analytics/maintenance partial 🚧
 
 ---
 
@@ -85,6 +93,8 @@
 * **Maintenance Service** → preventive maintenance and equipment tracking.
 * **Analytics Service** → client-specific reporting and trend analysis.
 
+Status: Jobs/Quotes/Documents/Feedback implemented ✅; Emergency/Maintenance/Advanced Analytics pending 🚧
+
 ---
 
 ## 4. 📋 Enhanced ServiceM8 Integration
@@ -110,6 +120,8 @@
 * **Materials Service** → sync materials and parts data from ServiceM8.
 * **Photo Service** → handle real-time photo updates and organization.
 
+Status: Core SM8 client/sync implemented ✅; materials/staff/photos advanced features partially implemented 🚧
+
 ---
 
 ## 5. ⚡ Enhanced Realtime & Push Notifications
@@ -132,6 +144,8 @@
 * **Enhanced Push Notification Service** → rich notifications with actionable buttons.
 * **Emergency Alert Service** → priority notification system for urgent situations.
 * **Notification History Service** → manage notification preferences and history.
+
+Status: Realtime jobs/quotes implemented ✅; advanced technician tracking and rich push actions partial 🚧
 
 ---
 
@@ -156,6 +170,8 @@
 * **Satisfaction Service** → feedback analysis and satisfaction tracking.
 * **Maintenance Analytics Service** → preventive maintenance effectiveness tracking.
 
+Status: Planned; initial admin stats present, full analytics pending 🚧
+
 ---
 
 ## 7. 🔧 Maintenance & Service Contracts
@@ -179,6 +195,8 @@
 * **Preventive Maintenance Service** → automated scheduling and reminders.
 * **Service History Service** → comprehensive maintenance record keeping.
 
+Status: Planned 🚧
+
 ---
 
 ## 8. 🚨 Emergency & Priority Services
@@ -198,6 +216,8 @@
 * **Emergency Request Service** → 24/7 emergency service coordination.
 * **Emergency Response Service** → real-time status and escalation handling.
 * **Emergency Contact Service** → manage multiple contact methods and escalation.
+
+Status: Planned 🚧
 
 ---
 
@@ -220,6 +240,8 @@
 * **Weather Service** → correlate weather patterns with service needs.
 * **Mobile Camera Service** → photo capture and organization.
 * **Location Service** → GPS-based service requests and tracking.
+
+Status: Planned 🚧
 
 ---
 

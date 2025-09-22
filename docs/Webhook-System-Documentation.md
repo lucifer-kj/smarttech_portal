@@ -1,5 +1,9 @@
 # ServiceM8 Webhook System Documentation
 
+> Status & Alignment (Sep 2025)
+> - Implemented in project (Phase 5 complete): `/api/webhooks/sm8`, async processor, Supabase Realtime broadcasting, admin dashboard
+> - Pending (Phase 10): Scheduled reconciliation backfill and enhanced sync health checks
+
 ## Overview
 
 The ServiceM8 Webhook System provides real-time event processing and synchronization between ServiceM8 and the SmartTech Client Portal. This system handles incoming webhook events, processes them asynchronously, and broadcasts real-time updates to connected clients.
@@ -68,6 +72,10 @@ WEBHOOK_SECRET=your_webhook_secret_key  # From ServiceM8 webhook settings
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# Reconciliation/Scheduling (Phase 10)
+RECONCILIATION_CRON_ENABLED=true
+RECONCILIATION_CRON_SCHEDULE=0 * * * *  # hourly default
 ```
 
 ## Webhook Event Processing
@@ -220,6 +228,7 @@ Access the webhook dashboard at `/admin/webhook-dashboard` to:
 - Retry failed events manually
 - View event details and error messages
 - Clean up old events
+ - Trigger on-demand reconciliation (admin action) [Phase 10]
 
 ### API Endpoints
 
@@ -311,6 +320,7 @@ const stats = await webhookProcessor.getProcessingStats();
    - Check webhook processor logs
    - Verify ServiceM8 API credentials
    - Check database connectivity
+   - Ensure reconciliation job is not disabled (if expecting backfill updates)
 
 4. **Realtime Updates Not Working**
    - Verify Supabase Realtime is enabled
@@ -359,6 +369,7 @@ const stats = await webhookProcessor.getProcessingStats();
 - **Advanced Analytics**: Detailed webhook analytics and reporting
 - **Custom Event Handlers**: Allow custom event processing logic
 - **Webhook Testing**: Built-in webhook testing and simulation tools
+- **Scheduled Reconciliation**: Periodic verification and backfill (Phase 10)
 
 ### Integration Opportunities
 
@@ -380,7 +391,11 @@ For issues or questions regarding the webhook system:
 
 ## Changelog
 
-### Version 1.0.0 (Current)
+### Version 1.1.0 (Current)
+- Added alignment notes and Phase 10 reconciliation references
+- Environment variables for scheduling placeholders documented
+
+### Version 1.0.0
 - Initial webhook system implementation
 - ServiceM8 webhook endpoint with signature verification
 - Advanced event processing with retry logic

@@ -1,5 +1,9 @@
 # Enhanced SmartTech Client Portal
 
+> Status & Alignment (Sep 2025)
+> - Phases 1–9 completed; currently executing Phase 10 (Reconciliation & Sync)
+> - Advanced features (maintenance, emergency, analytics) are planned for Phases 13+
+
 ## 🟦 Epics (Board Columns)
 
 1. **Setup & Infrastructure**
@@ -120,7 +124,7 @@
 * **Rich Push Notifications**
   * Acceptance: Actionable notifications with rich content and deep linking.
 * **Emergency Alert System**
-  * Acceptance: Priority notifications with escalation and multi-channel delivery.
+  * Acceptance: Priority notifications with escalation and multi-channel delivery. (Planned)
 * **Notification Analytics**
   * Acceptance: Delivery tracking, engagement metrics, and optimization insights.
 
@@ -128,7 +132,7 @@
 * **Client Analytics & Reporting**
   * Acceptance: Personal service trends, cost analysis, and predictive insights.
 * **Emergency Service System**
-  * Acceptance: 24/7 emergency requests with real-time status and escalation.
+  * Acceptance: 24/7 emergency requests with real-time status and escalation. (Planned)
 * **Integration Hub**
   * Acceptance: Calendar sync, weather correlation, and third-party integrations.
 * **Mobile Enhancement**
@@ -168,17 +172,17 @@
 ### New Advanced Tables
 * `job_activities` - Detailed activity tracking with technician updates
 * `materials` - Parts and materials used in jobs with cost tracking
-* `maintenance_contracts` - Service agreements and recurring maintenance
-* `equipment_registry` - Client equipment with warranty and service history
-* `emergency_requests` - Emergency service tracking with response times
-* `client_analytics` - Pre-calculated analytics and metrics
+* `maintenance_contracts` - Service agreements and recurring maintenance (Planned)
+* `equipment_registry` - Client equipment with warranty and service history (Planned)
+* `emergency_requests` - Emergency service tracking with response times (Planned)
+* `client_analytics` - Pre-calculated analytics and metrics (Planned)
 * `notification_history` - Comprehensive notification tracking
 * `integration_logs` - Third-party integration monitoring
 
 ### Analytics Tables
-* `service_trends` - Historical patterns and predictive insights
-* `satisfaction_metrics` - Feedback analysis and satisfaction tracking
-* `performance_metrics` - System and business performance data
+* `service_trends` - Historical patterns and predictive insights (Planned)
+* `satisfaction_metrics` - Feedback analysis and satisfaction tracking (Planned)
+* `performance_metrics` - System and business performance data (Planned)
 
 ---
 
@@ -192,11 +196,11 @@
 * `/api/notifications/*` - Rich notification system
 
 ### New Advanced APIs
-* `/api/analytics/*` - Business intelligence and reporting
-* `/api/maintenance/*` - Maintenance contracts and equipment
-* `/api/emergency/*` - Emergency service coordination  
-* `/api/integrations/*` - Third-party service integrations
-* `/api/mobile/*` - Mobile-specific features and optimizations
+* `/api/analytics/*` - Business intelligence and reporting (Planned)
+* `/api/maintenance/*` - Maintenance contracts and equipment (Planned)
+* `/api/emergency/*` - Emergency service coordination  (Planned)
+* `/api/integrations/*` - Third-party service integrations (Planned)
+* `/api/mobile/*` - Mobile-specific features and optimizations (Planned)
 
 ---
 
@@ -207,20 +211,20 @@
 2. **Advanced User Management** - Bulk operations and detailed user analytics
 3. **System Monitoring** - Comprehensive sync status and performance monitoring
 4. **Business Intelligence** - Service trends, satisfaction metrics, and forecasting
-5. **Emergency Management** - Real-time emergency request handling
+5. **Emergency Management** - Real-time emergency request handling (Planned)
 
 ### Client Experience
-1. **Enhanced Job Tracking** - Real-time technician updates and progress photos
+1. **Enhanced Job Tracking** - Real-time technician updates and progress photos (Implemented baseline; live location planned)
 2. **Smart Quote Management** - Line item approvals and cost comparisons
 3. **Comprehensive Documents** - Organized, searchable document library
-4. **Maintenance Planning** - Proactive maintenance scheduling and reminders
-5. **Emergency Access** - Quick emergency service requests with real-time updates
+4. **Maintenance Planning** - Proactive maintenance scheduling and reminders (Planned)
+5. **Emergency Access** - Quick emergency service requests with real-time updates (Planned)
 
 ### Mobile Experience  
 1. **Offline Capabilities** - Comprehensive offline job and document access
 2. **Camera Integration** - Photo capture for service requests and feedback
 3. **Location Services** - GPS-based emergency requests and technician tracking
-4. **Rich Notifications** - Actionable push notifications with deep linking
+4. **Rich Notifications** - Actionable push notifications with deep linking (Partially implemented)
 
 ---
 
@@ -234,11 +238,11 @@
 - Technician performance metrics
 
 ### Emergency & Priority Services
-- 24/7 emergency request system
-- Real-time response tracking
-- Automatic escalation workflows
-- Multi-channel emergency notifications
-- Emergency response analytics
+- 24/7 emergency request system (Planned)
+- Real-time response tracking (Planned)
+- Automatic escalation workflows (Planned)
+- Multi-channel emergency notifications (Planned)
+- Emergency response analytics (Planned)
 
 ### Integration & Automation
 - Calendar synchronization (Google/Outlook)
@@ -277,3 +281,15 @@
 - Market trend analysis and forecasting
 
 ---
+
+## ✅ Critical Pre-Production Checklist
+
+- Reconciliation cron/Edge Function enabled with safe backfill and idempotency (Phase 10)
+- Sync health checks, metrics, and alerting for SM8/API errors and webhook lag
+- Webhook signature verification enforced; fallback API validation covered by tests
+- RLS policy tests for all roles (admin/client/banned) and tables
+- Integration tests for ServiceM8 client, sync, and webhook processor
+- E2E flows on staging: login → dashboard → job → quote approve/reject → realtime update
+- Monitoring/observability: structured logs with correlation IDs, Sentry, uptime checks
+- CI/CD: automated tests and migrations, environment promotion, rollback procedures
+- Backups and disaster recovery plan verified; storage bucket permissions locked down
