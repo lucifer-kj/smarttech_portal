@@ -11,7 +11,7 @@ import { supabase } from '@/lib/supabase/client'
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters').optional(),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
 })
 
 function LoginForm() {
@@ -34,17 +34,21 @@ function LoginForm() {
 
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: validatedData.email,
-        password: validatedData.password as string,
+        password: validatedData.password,
       })
 
       if (signInError) {
         throw new Error(signInError.message || 'Failed to sign in')
       }
 
+      if (!data.session) {
+        throw new Error('Sign in did not return a session')
+      }
+
       // Fetch fresh auth user (ensures latest app_metadata/user_metadata)
-      const { data: currentUser } = await supabase.auth.getUser()
+      const { data: { user: authUser } } = await supabase.auth.getUser()
       type RoleMeta = { role?: 'admin' | 'client' | string }
-      const authRole = (currentUser.user?.app_metadata as RoleMeta)?.role || (currentUser.user?.user_metadata as RoleMeta)?.role
+      const authRole = (authUser?.app_metadata as RoleMeta)?.role || (authUser?.user_metadata as RoleMeta)?.role
 
       // Fallback to server session API (service role) if auth metadata is missing
       let role = authRole as string | undefined
@@ -87,7 +91,7 @@ function LoginForm() {
           <p className="text-gray-600">Sign in with your email and password.</p>
         </div>
 
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handlePasswordSignIn}>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
               Email Address
@@ -128,8 +132,7 @@ function LoginForm() {
 
           <div>
             <Button
-              type="button"
-              onClick={handlePasswordSignIn}
+              type="submit"
               disabled={isLoading || !email || !password}
               className="w-full bg-blue-600 text-white hover:bg-blue-700"
             >
