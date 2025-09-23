@@ -18,7 +18,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, data: created });
   } catch (e) {
     console.error('Failed to create ServiceM8 client', e);
-    return NextResponse.json({ success: false, error: 'Failed to create ServiceM8 client' }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Failed to create ServiceM8 client',
+      message: e instanceof Error ? e.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
 

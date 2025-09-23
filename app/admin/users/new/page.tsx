@@ -43,40 +43,75 @@ export default function NewUserPage() {
         companyName, companyEmail, phone, address, notes,
       })
 
-      // 1) Create ServiceM8 client
-      const createSm8 = await fetch('/api/servicem8/clients', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: payload.companyName,
-          email: payload.companyEmail || payload.email,
-          phone: payload.phone,
-          address: payload.address,
-          notes: payload.notes,
-        }),
-      })
-      if (!createSm8.ok) {
-        const j = await createSm8.json().catch(() => ({}))
-        throw new Error(j.error || 'Failed to create ServiceM8 client')
-      }
-      const sm8Resp = await createSm8.json()
-      const newSm8Uuid = sm8Resp?.data?.uuid || null
-
-      // 2) Create portal user
+      // Preferred email for the portal user
       const userEmail = payload.email || payload.companyEmail
       if (!userEmail) throw new Error('A valid email is required to create and invite the user')
 
+      // 1) Create portal user first (ensures RLS + magic link even if SM8 fails)
+      let createdUser: { id: string } | null = null
+      let userCreate409 = false
       const resp = await fetch('/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: userEmail, role: payload.role, sm8_uuid: newSm8Uuid }),
+        body: JSON.stringify({ email: userEmail, role: payload.role, sm8_uuid: null }),
       })
       if (!resp.ok) {
+        if (resp.status === 409) {
+          userCreate409 = true
+        } else {
+          const j = await resp.json().catch(() => ({}))
+          throw new Error(j.error || 'Failed to create user')
+        }
+      } else {
         const j = await resp.json().catch(() => ({}))
-        throw new Error(j.error || 'Failed to create user')
+        createdUser = j?.data || null
       }
 
-      // 3) Send magic link
+      // 2) Try to create ServiceM8 client (non-blocking)
+      let newSm8Uuid: string | null = null
+      try {
+        const createSm8 = await fetch('/api/servicem8/clients', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: payload.companyName,
+            email: userEmail,
+            phone: payload.phone,
+            address: payload.address,
+            notes: payload.notes,
+          }),
+        })
+        if (createSm8.ok) {
+          const sm8Resp = await createSm8.json()
+          newSm8Uuid = sm8Resp?.data?.uuid || null
+        }
+      } catch {
+        // ignore; we'll proceed without SM8 link
+      }
+
+      // 3) If we have an sm8 uuid and a user, update the user record
+      if (newSm8Uuid) {
+        // If user was 409, try to fetch existing user id
+        if (!createdUser) {
+          const q = new URLSearchParams({ page: '1', search: userEmail, role: 'all', status: 'all' })
+          const u = await fetch(`/api/admin/users?${q.toString()}`)
+          const uj = await u.json().catch(() => ({}))
+          const existing = Array.isArray(uj?.data?.users) ? uj.data.users.find((u: { email: string }) => u.email === userEmail) : null
+          if (existing) {
+            createdUser = { id: existing.id }
+          }
+        }
+
+        if (createdUser?.id) {
+          await fetch(`/api/admin/users/${createdUser.id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'update', sm8_uuid: newSm8Uuid })
+          }).catch(() => {})
+        }
+      }
+
+      // 4) Send magic link
       const ml = await fetch('/api/auth/magic-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -87,7 +122,10 @@ export default function NewUserPage() {
         throw new Error(j.error || 'Failed to send magic link')
       }
 
-      setSuccess('ServiceM8 client created, user added, and magic link sent.')
+      setSuccess(userCreate409
+        ? 'User already existed. Magic link sent. ServiceM8 link applied if available.'
+        : 'User created. Magic link sent. ServiceM8 client created if available.'
+      )
       setEmail('')
       setRole('client')
       setSm8('')
