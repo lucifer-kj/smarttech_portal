@@ -5,12 +5,10 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { z } from 'zod'
-// import { supabase } from '@/lib/supabase/client'
 
 const schema = z.object({
   email: z.string().email('Enter a valid email').optional(),
   role: z.enum(['admin', 'client']),
-  sm8_uuid: z.string().optional().nullable(),
   companyName: z.string().min(1, 'Company name is required'),
   companyEmail: z.string().email('Enter a valid email').optional().or(z.literal('')),
   phone: z.string().optional().or(z.literal('')),
@@ -21,7 +19,7 @@ const schema = z.object({
 export default function NewUserPage() {
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'admin' | 'client'>('client')
-  const [sm8, setSm8] = useState('')
+
   const [companyName, setCompanyName] = useState('')
   const [companyEmail, setCompanyEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -39,7 +37,7 @@ export default function NewUserPage() {
 
     try {
       const payload = schema.parse({ 
-        email, role, sm8_uuid: sm8 || null,
+        email, role,
         companyName, companyEmail, phone, address, notes,
       })
 
@@ -67,26 +65,59 @@ export default function NewUserPage() {
         createdUser = j?.data || null
       }
 
-      // 2) Try to create ServiceM8 client (non-blocking)
+      // 2) Try to create ServiceM8 client (non-blocking) - FIXED PAYLOAD
       let newSm8Uuid: string | null = null
+      let sm8Error: string | null = null
       try {
+        // Fixed ServiceM8 payload structure
+        const sm8Payload = {
+          // Required fields according to ServiceM8 API
+          company_name: payload.companyName,
+          // Optional fields - only include if they have values
+          ...(userEmail && { email: userEmail }),
+          ...(payload.phone && { phone: payload.phone }),
+          ...(payload.address && { 
+            // ServiceM8 typically expects structured address fields
+            address: payload.address,
+            // You might need to split address into components:
+            // address_line_1: payload.address,
+            // suburb: '',
+            // state: '',
+            // postcode: '',
+            // country: 'AU' // or appropriate country code
+          }),
+          ...(payload.notes && { notes: payload.notes }),
+          // Additional fields that might be required/useful:
+          active: 1, // Usually required - 1 for active client
+          // customer_type: 'Company', // if you want to specify type
+        }
+
+        console.log('Creating ServiceM8 client with payload:', sm8Payload)
+
         const createSm8 = await fetch('/api/servicem8/clients', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: payload.companyName,
-            email: userEmail,
-            phone: payload.phone,
-            address: payload.address,
-            notes: payload.notes,
-          }),
+          headers: { 
+            'Content-Type': 'application/json',
+            // Ensure your API route includes proper ServiceM8 headers:
+            // 'Authorization': 'Bearer YOUR_TOKEN' or 'Basic base64(username:password)'
+          },
+          body: JSON.stringify(sm8Payload),
         })
+
         if (createSm8.ok) {
           const sm8Resp = await createSm8.json()
-          newSm8Uuid = sm8Resp?.data?.uuid || null
+          // ServiceM8 returns UUID in different places depending on endpoint
+          newSm8Uuid = sm8Resp?.data?.uuid || sm8Resp?.uuid || sm8Resp?.data?.id || null
+          console.log('ServiceM8 client created:', newSm8Uuid)
+        } else {
+          // Get error details for debugging
+          const errorText = await createSm8.text().catch(() => 'Unknown error')
+          sm8Error = `ServiceM8 API error (${createSm8.status}): ${errorText}`
+          console.error('ServiceM8 client creation failed:', sm8Error)
         }
-      } catch {
-        // ignore; we'll proceed without SM8 link
+      } catch (err) {
+        sm8Error = `ServiceM8 request failed: ${err instanceof Error ? err.message : 'Unknown error'}`
+        console.error('ServiceM8 client creation error:', err)
       }
 
       // 3) If we have an sm8 uuid and a user, update the user record
@@ -107,7 +138,9 @@ export default function NewUserPage() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'update', sm8_uuid: newSm8Uuid })
-          }).catch(() => {})
+          }).catch((err) => {
+            console.error('Failed to update user with SM8 UUID:', err)
+          })
         }
       }
 
@@ -122,13 +155,22 @@ export default function NewUserPage() {
         throw new Error(j.error || 'Failed to send magic link')
       }
 
-      setSuccess(userCreate409
-        ? 'User already existed. Magic link sent. ServiceM8 link applied if available.'
-        : 'User created. Magic link sent. ServiceM8 client created if available.'
-      )
+      // Build success message with ServiceM8 status
+      let successMessage = userCreate409
+        ? 'User already existed. Magic link sent.'
+        : 'User created successfully. Magic link sent.'
+      
+      if (newSm8Uuid) {
+        successMessage += ' ServiceM8 client created and linked.'
+      } else if (sm8Error) {
+        successMessage += ` ServiceM8 client creation failed: ${sm8Error}`
+      }
+
+      setSuccess(successMessage)
+      
+      // Clear form
       setEmail('')
       setRole('client')
-      setSm8('')
       setCompanyName('')
       setCompanyEmail('')
       setPhone('')
@@ -166,7 +208,7 @@ export default function NewUserPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
               <Input value={companyName} onChange={e => setCompanyName(e.target.value)} required />
             </div>
             <div>
@@ -186,10 +228,6 @@ export default function NewUserPage() {
               <Input value={notes} onChange={e => setNotes(e.target.value)} />
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">ServiceM8 UUID (optional)</label>
-            <Input value={sm8} onChange={e => setSm8(e.target.value)} placeholder="e.g. 123e4567-e89b-12d3-a456-426614174000" />
-          </div>
 
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-md p-3 text-sm text-red-700">{error}</div>
@@ -199,7 +237,7 @@ export default function NewUserPage() {
           )}
 
           <div className="flex justify-end">
-            <Button type="submit" disabled={isLoading || (!email && !companyEmail)}>
+            <Button type="submit" disabled={isLoading || (!email && !companyEmail)} variant="outline">
               {isLoading ? 'Creating...' : 'Create User'}
             </Button>
           </div>
@@ -208,5 +246,3 @@ export default function NewUserPage() {
     </div>
   )
 }
-
-
