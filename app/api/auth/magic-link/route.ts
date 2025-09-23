@@ -5,6 +5,8 @@ import { z } from 'zod'
 const magicLinkSchema = z.object({
   email: z.string().email('Invalid email address'),
   redirectTo: z.string().url().optional(),
+  // appRedirect is an app-internal path such as "/client" or "/admin"
+  appRedirect: z.string().optional(),
 })
 
 interface UserData {
@@ -17,7 +19,7 @@ interface UserData {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, redirectTo } = magicLinkSchema.parse(body)
+    const { email, redirectTo, appRedirect } = magicLinkSchema.parse(body)
 
     const supabase = createAdminClient()
 
@@ -51,12 +53,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Build safe redirect target
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const safeAppRedirect = ((): string | undefined => {
+      if (!appRedirect) return undefined
+      // Only allow internal paths to avoid open redirects
+      if (typeof appRedirect === 'string' && appRedirect.startsWith('/')) {
+        return appRedirect
+      }
+      return undefined
+    })()
+
+    const finalRedirect = redirectTo || `${appUrl}/auth/callback${safeAppRedirect ? `?redirectTo=${encodeURIComponent(safeAppRedirect)}` : ''}`
+
     // Generate magic link
     const { data, error } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email: email,
       options: {
-        redirectTo: redirectTo || `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback`,
+        redirectTo: finalRedirect,
       },
     })
 

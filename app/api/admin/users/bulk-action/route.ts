@@ -62,7 +62,7 @@ async function bulkSendMagicLinks(userIds: string[], supabase: ReturnType<typeof
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: user, error: userError } = await (supabase as any)
         .from('users')
-        .select('email')
+        .select('email, role, is_banned')
         .eq('id', userId)
         .single();
 
@@ -72,12 +72,21 @@ async function bulkSendMagicLinks(userIds: string[], supabase: ReturnType<typeof
         continue;
       }
 
+      if (user.is_banned) {
+        failureCount++;
+        errors.push(`User ${userId} is banned`);
+        continue;
+      }
+
       // Send magic link
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
       const response = await fetch(`${baseUrl}/api/auth/magic-link`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email }),
+        body: JSON.stringify({ 
+          email: user.email,
+          appRedirect: user.role === 'admin' ? '/admin' : '/client'
+        }),
       });
 
       if (response.ok) {

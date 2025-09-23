@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user already exists
+    // Check if user already exists (by email)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: existingUser } = await (supabase as any)
       .from('users')
@@ -103,6 +103,23 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'User with this email already exists' },
         { status: 409 }
       );
+    }
+
+    // If sm8_uuid provided, ensure not already linked to another user
+    if (sm8_uuid) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: linkedUser } = await (supabase as any)
+        .from('users')
+        .select('id, email')
+        .eq('sm8_uuid', sm8_uuid)
+        .single();
+
+      if (linkedUser) {
+        return NextResponse.json(
+          { success: false, error: 'This ServiceM8 client is already linked to another user' },
+          { status: 409 }
+        );
+      }
     }
 
     // Create user

@@ -5,18 +5,28 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { z } from 'zod'
-import { supabase } from '@/lib/supabase/client'
+// import { supabase } from '@/lib/supabase/client'
 
 const schema = z.object({
-  email: z.string().email('Enter a valid email'),
+  email: z.string().email('Enter a valid email').optional(),
   role: z.enum(['admin', 'client']),
   sm8_uuid: z.string().optional().nullable(),
+  companyName: z.string().min(1, 'Company name is required'),
+  companyEmail: z.string().email('Enter a valid email').optional().or(z.literal('')),
+  phone: z.string().optional().or(z.literal('')),
+  address: z.string().optional().or(z.literal('')),
+  notes: z.string().optional().or(z.literal('')),
 })
 
 export default function NewUserPage() {
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'admin' | 'client'>('client')
   const [sm8, setSm8] = useState('')
+  const [companyName, setCompanyName] = useState('')
+  const [companyEmail, setCompanyEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [address, setAddress] = useState('')
+  const [notes, setNotes] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -28,22 +38,64 @@ export default function NewUserPage() {
     setSuccess(null)
 
     try {
-      const payload = schema.parse({ email, role, sm8_uuid: sm8 || null })
+      const payload = schema.parse({ 
+        email, role, sm8_uuid: sm8 || null,
+        companyName, companyEmail, phone, address, notes,
+      })
 
-      // Create auth user via admin RPC route (assume API exists), otherwise invite
+      // 1) Create ServiceM8 client
+      const createSm8 = await fetch('/api/servicem8/clients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: payload.companyName,
+          email: payload.companyEmail || payload.email,
+          phone: payload.phone,
+          address: payload.address,
+          notes: payload.notes,
+        }),
+      })
+      if (!createSm8.ok) {
+        const j = await createSm8.json().catch(() => ({}))
+        throw new Error(j.error || 'Failed to create ServiceM8 client')
+      }
+      const sm8Resp = await createSm8.json()
+      const newSm8Uuid = sm8Resp?.data?.uuid || null
+
+      // 2) Create portal user
+      const userEmail = payload.email || payload.companyEmail
+      if (!userEmail) throw new Error('A valid email is required to create and invite the user')
+
       const resp = await fetch('/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ email: userEmail, role: payload.role, sm8_uuid: newSm8Uuid }),
       })
       if (!resp.ok) {
         const j = await resp.json().catch(() => ({}))
         throw new Error(j.error || 'Failed to create user')
       }
-      setSuccess('User created. Magic link sent if configured.')
+
+      // 3) Send magic link
+      const ml = await fetch('/api/auth/magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userEmail, appRedirect: role === 'admin' ? '/admin' : '/client' }),
+      })
+      if (!ml.ok) {
+        const j = await ml.json().catch(() => ({}))
+        throw new Error(j.error || 'Failed to send magic link')
+      }
+
+      setSuccess('ServiceM8 client created, user added, and magic link sent.')
       setEmail('')
       setRole('client')
       setSm8('')
+      setCompanyName('')
+      setCompanyEmail('')
+      setPhone('')
+      setAddress('')
+      setNotes('')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -60,8 +112,8 @@ export default function NewUserPage() {
       <Card className="p-6">
         <form className="space-y-4" onSubmit={handleCreate}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Portal Login Email (optional)</label>
+            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="If different from company email" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
@@ -73,6 +125,28 @@ export default function NewUserPage() {
               <option value="client">Client</option>
               <option value="admin">Admin</option>
             </select>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+              <Input value={companyName} onChange={e => setCompanyName(e.target.value)} required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Company Email</label>
+              <Input type="email" value={companyEmail} onChange={e => setCompanyEmail(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+              <Input value={phone} onChange={e => setPhone(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+              <Input value={address} onChange={e => setAddress(e.target.value)} />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+              <Input value={notes} onChange={e => setNotes(e.target.value)} />
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">ServiceM8 UUID (optional)</label>
@@ -87,7 +161,7 @@ export default function NewUserPage() {
           )}
 
           <div className="flex justify-end">
-            <Button type="submit" disabled={isLoading || !email}>
+            <Button type="submit" disabled={isLoading || (!email && !companyEmail)}>
               {isLoading ? 'Creating...' : 'Create User'}
             </Button>
           </div>

@@ -5,7 +5,6 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { 
-  Users, 
   Search, 
   Plus, 
   MoreVertical, 
@@ -36,6 +35,7 @@ export default function UserManagement() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     setIsLoading(true);
@@ -196,10 +196,34 @@ export default function UserManagement() {
             <Download className="h-4 w-4 mr-2" />
             Export Users
           </Button>
-          <Button onClick={() => location.assign('/admin/users/new')} variant="outline">
-            <Plus className="h-4 w-4 mr-2" />
-            Add User
-          </Button>
+          <div className="relative">
+            <Button onClick={() => setMenuOpen(v => !v)} variant="outline">
+              <Plus className="h-4 w-4 mr-2" />
+              Add User
+            </Button>
+            {menuOpen && (
+              <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    location.assign('/admin/users/new?mode=create-sm8');
+                  }}
+                >
+                  Create new user (ServiceM8 + Magic link)
+                </button>
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    location.assign('/admin/users/link-existing');
+                  }}
+                >
+                  Link existing ServiceM8 client
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

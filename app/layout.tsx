@@ -15,7 +15,6 @@ export const metadata: Metadata = {
   keywords: ["SmartTech", "client portal", "jobs", "quotes", "feedback"],
   authors: [{ name: "SmartTech" }],
   manifest: "/manifest.json",
-  themeColor: "#2563eb",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -35,6 +34,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  themeColor: "#2563eb",
 };
 
 export default function RootLayout({

@@ -278,6 +278,27 @@ export class ServiceM8Client {
   }
 
   /**
+   * Create a new company/client
+   * Note: Adjust payload/response according to ServiceM8 API contract.
+   */
+  async createClient(payload: {
+    name: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    notes?: string;
+  }): Promise<{ uuid: string } | unknown> {
+    return this.makeRequest<unknown>(
+      '/company.json',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }
+    );
+  }
+
+  /**
    * Get job activities for a specific job
    */
   async getJobActivities(
