@@ -84,7 +84,7 @@ export default function AdminSettingsPage() {
 
           <Card className="p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">Notifications</h2>
-            <NotificationPreferences />
+            <NotificationPreferences userId={user?.id || ''} />
           </Card>
         </div>
       )}
