@@ -65,31 +65,30 @@ export default function NewUserPage() {
         createdUser = j?.data || null
       }
 
-      // 2) Try to create ServiceM8 client (non-blocking) - FIXED PAYLOAD
+      // 2) Try to create ServiceM8 client (non-blocking) - EXACT REQUIRED PAYLOAD
       let newSm8Uuid: string | null = null
       let sm8Error: string | null = null
       try {
-        // Fixed ServiceM8 payload structure
-        const sm8Payload = {
-          // Required fields according to ServiceM8 API
-          company_name: payload.companyName,
-          // Optional fields - only include if they have values
-          ...(userEmail && { email: userEmail }),
-          ...(payload.phone && { phone: payload.phone }),
-          ...(payload.address && { 
-            // ServiceM8 typically expects structured address fields
-            address: payload.address,
-            // You might need to split address into components:
-            // address_line_1: payload.address,
-            // suburb: '',
-            // state: '',
-            // postcode: '',
-            // country: 'AU' // or appropriate country code
-          }),
-          ...(payload.notes && { notes: payload.notes }),
-          // Additional fields that might be required/useful:
-          active: 1, // Usually required - 1 for active client
-          // customer_type: 'Company', // if you want to specify type
+        // Build payload exactly as required by ServiceM8 company creation
+        const generatedUuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-temp-uuid`
+        const sm8Payload: Record<string, string> = {
+          name: payload.companyName,
+          abn_number: '',
+          address: payload.address || '',
+          billing_address: '',
+          uuid: generatedUuid,
+          website: '',
+          is_individual: '0',
+          address_street: payload.address || '',
+          address_city: '',
+          address_state: '',
+          address_postcode: '',
+          address_country: 'AU',
+          fax_number: '',
+          badges: '',
+          tax_rate_uuid: '',
+          billing_attention: '',
+          payment_terms: ''
         }
 
         console.log('Creating ServiceM8 client with payload:', sm8Payload)
@@ -106,7 +105,7 @@ export default function NewUserPage() {
 
         if (createSm8.ok) {
           const sm8Resp = await createSm8.json()
-          // ServiceM8 returns UUID in different places depending on endpoint
+          // Expect uuid on response data; fallbacks in case API wrapper differs
           newSm8Uuid = sm8Resp?.data?.uuid || sm8Resp?.uuid || sm8Resp?.data?.id || null
           console.log('ServiceM8 client created:', newSm8Uuid)
         } else {

@@ -122,7 +122,42 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create user
+    // Create Supabase Auth user first (ensures presence in auth.users)
+    try {
+      // Attempt to create auth user with metadata; if user already exists, ignore
+      const { error: authCreateError } = await supabase.auth.admin.createUser({
+        email,
+        email_confirm: true,
+        user_metadata: {
+          role,
+          sm8_uuid: sm8_uuid || null,
+          is_banned: false,
+          first_login_complete: false,
+        },
+        app_metadata: {
+          role,
+        },
+      });
+
+      if (authCreateError) {
+        const message = authCreateError.message?.toLowerCase() || '';
+        // Allow conflict cases where the user already exists in auth
+        const isConflict = message.includes('already registered') || message.includes('user already exists') || authCreateError.status === 422 || authCreateError.status === 409;
+        if (!isConflict) {
+          throw new Error(`Failed to create auth user: ${authCreateError.message}`);
+        }
+      }
+    } catch (e) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: e instanceof Error ? e.message : 'Failed to create auth user',
+        },
+        { status: 500 }
+      );
+    }
+
+    // Create app user record
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: newUser, error } = await (supabase as any)
       .from('users')

@@ -286,25 +286,7 @@ export class ServiceM8Client {
    * Accepts full payload as required by ServiceM8 API
    * @param payload - Full client/company object
    */
-  async createClient(payload: {
-    name: string;
-    abn_number: string;
-    address: string;
-    billing_address: string;
-    uuid: string;
-    website: string;
-    is_individual: string;
-    address_street: string;
-    address_city: string;
-    address_state: string;
-    address_postcode: string;
-    address_country: string;
-    fax_number: string;
-    badges: string;
-    tax_rate_uuid: string;
-    billing_attention: string;
-    payment_terms: string;
-  }): Promise<{ uuid: string } | unknown> {
+  async createClient(payload: Record<string, unknown>): Promise<{ uuid?: string } | unknown> {
     return this.makeRequest<unknown>(
       '/company.json',
       {
