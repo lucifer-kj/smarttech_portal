@@ -281,12 +281,29 @@ export class ServiceM8Client {
    * Create a new company/client
    * Note: Adjust payload/response according to ServiceM8 API contract.
    */
+  /**
+   * Create a new company/client in ServiceM8
+   * Accepts full payload as required by ServiceM8 API
+   * @param payload - Full client/company object
+   */
   async createClient(payload: {
     name: string;
-    email?: string;
-    phone?: string;
-    address?: string;
-    notes?: string;
+    abn_number: string;
+    address: string;
+    billing_address: string;
+    uuid: string;
+    website: string;
+    is_individual: string;
+    address_street: string;
+    address_city: string;
+    address_state: string;
+    address_postcode: string;
+    address_country: string;
+    fax_number: string;
+    badges: string;
+    tax_rate_uuid: string;
+    billing_attention: string;
+    payment_terms: string;
   }): Promise<{ uuid: string } | unknown> {
     return this.makeRequest<unknown>(
       '/company.json',
