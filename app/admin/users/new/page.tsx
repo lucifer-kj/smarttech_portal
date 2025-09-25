@@ -13,6 +13,21 @@ const schema = z.object({
   companyEmail: z.string().email('Enter a valid email').optional().or(z.literal('')),
   phone: z.string().optional().or(z.literal('')),
   address: z.string().optional().or(z.literal('')),
+  // Optional but commonly required SM8 company fields
+  abnNumber: z.string().optional().or(z.literal('')),
+  website: z.string().url('Enter a valid URL').optional().or(z.literal('')),
+  isIndividual: z.boolean().optional(),
+  addressStreet: z.string().optional().or(z.literal('')),
+  addressCity: z.string().optional().or(z.literal('')),
+  addressState: z.string().optional().or(z.literal('')),
+  addressPostcode: z.string().optional().or(z.literal('')),
+  addressCountry: z.string().optional().or(z.literal('')),
+  billingAddress: z.string().optional().or(z.literal('')),
+  billingAttention: z.string().optional().or(z.literal('')),
+  faxNumber: z.string().optional().or(z.literal('')),
+  badges: z.string().optional().or(z.literal('')),
+  taxRateUuid: z.string().uuid('Invalid Tax Rate UUID').optional().or(z.literal('')),
+  paymentTerms: z.string().optional().or(z.literal('')),
   notes: z.string().optional().or(z.literal('')),
 })
 
@@ -24,6 +39,21 @@ export default function NewUserPage() {
   const [companyEmail, setCompanyEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [address, setAddress] = useState('')
+  // Additional SM8 fields
+  const [abnNumber, setAbnNumber] = useState('')
+  const [website, setWebsite] = useState('')
+  const [isIndividual, setIsIndividual] = useState(false)
+  const [addressStreet, setAddressStreet] = useState('')
+  const [addressCity, setAddressCity] = useState('')
+  const [addressState, setAddressState] = useState('')
+  const [addressPostcode, setAddressPostcode] = useState('')
+  const [addressCountry, setAddressCountry] = useState('AU')
+  const [billingAddress, setBillingAddress] = useState('')
+  const [billingAttention, setBillingAttention] = useState('')
+  const [faxNumber, setFaxNumber] = useState('')
+  const [badges, setBadges] = useState('')
+  const [taxRateUuid, setTaxRateUuid] = useState('')
+  const [paymentTerms, setPaymentTerms] = useState('')
   const [notes, setNotes] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -38,7 +68,11 @@ export default function NewUserPage() {
     try {
       const payload = schema.parse({ 
         email, role,
-        companyName, companyEmail, phone, address, notes,
+        companyName, companyEmail, phone, address,
+        abnNumber, website, isIndividual,
+        addressStreet, addressCity, addressState, addressPostcode, addressCountry,
+        billingAddress, billingAttention, faxNumber, badges, taxRateUuid, paymentTerms,
+        notes,
       })
 
       // Preferred email for the portal user
@@ -73,22 +107,22 @@ export default function NewUserPage() {
         const generatedUuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-temp-uuid`
         const sm8Payload: Record<string, string> = {
           name: payload.companyName,
-          abn_number: '',
+          abn_number: payload.abnNumber || '',
           address: payload.address || '',
-          billing_address: '',
+          billing_address: payload.billingAddress || '',
           uuid: generatedUuid,
-          website: '',
-          is_individual: '0',
-          address_street: payload.address || '',
-          address_city: '',
-          address_state: '',
-          address_postcode: '',
-          address_country: 'AU',
-          fax_number: '',
-          badges: '',
-          tax_rate_uuid: '',
-          billing_attention: '',
-          payment_terms: ''
+          website: payload.website || '',
+          is_individual: payload.isIndividual ? '1' : '0',
+          address_street: (payload.addressStreet || payload.address || ''),
+          address_city: payload.addressCity || '',
+          address_state: payload.addressState || '',
+          address_postcode: payload.addressPostcode || '',
+          address_country: payload.addressCountry || 'AU',
+          fax_number: payload.faxNumber || '',
+          badges: payload.badges || '',
+          tax_rate_uuid: payload.taxRateUuid || '',
+          billing_attention: payload.billingAttention || '',
+          payment_terms: payload.paymentTerms || ''
         }
 
         console.log('Creating ServiceM8 client with payload:', sm8Payload)
@@ -221,6 +255,69 @@ export default function NewUserPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
               <Input value={address} onChange={e => setAddress(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ABN Number</label>
+              <Input value={abnNumber} onChange={e => setAbnNumber(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+              <Input type="url" value={website} onChange={e => setWebsite(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Individual Client</label>
+              <select
+                value={isIndividual ? '1' : '0'}
+                onChange={e => setIsIndividual(e.target.value === '1')}
+                className="block w-full border border-gray-300 rounded-md p-2 text-sm"
+              >
+                <option value="0">No (Company)</option>
+                <option value="1">Yes (Individual)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Address Street</label>
+              <Input value={addressStreet} onChange={e => setAddressStreet(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+              <Input value={addressCity} onChange={e => setAddressCity(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+              <Input value={addressState} onChange={e => setAddressState(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Postcode</label>
+              <Input value={addressPostcode} onChange={e => setAddressPostcode(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+              <Input value={addressCountry} onChange={e => setAddressCountry(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Billing Address</label>
+              <Input value={billingAddress} onChange={e => setBillingAddress(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Billing Attention</label>
+              <Input value={billingAttention} onChange={e => setBillingAttention(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Fax Number</label>
+              <Input value={faxNumber} onChange={e => setFaxNumber(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Badges</label>
+              <Input value={badges} onChange={e => setBadges(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tax Rate UUID</label>
+              <Input value={taxRateUuid} onChange={e => setTaxRateUuid(e.target.value)} placeholder="123e4567-..." />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Payment Terms</label>
+              <Input value={paymentTerms} onChange={e => setPaymentTerms(e.target.value)} />
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>

@@ -71,7 +71,7 @@ export default function LinkExistingSm8Page() {
           sm8_uuid: company.uuid
         })
       })
-      if (!res.ok) {
+      if (!res.ok && res.status !== 409) {
         const j = await res.json().catch(() => ({}))
         throw new Error(j.error || 'Failed to create user')
       }

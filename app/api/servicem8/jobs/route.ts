@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { serviceM8Client } from '@/services/servicem8-client';
+import servicem8 from '@api/servicem8';
 
 /**
  * ServiceM8 Data API Routes
@@ -36,13 +36,13 @@ export async function GET(request: NextRequest) {
       offset: offset ? parseInt(offset) : undefined,
     };
 
-    const response = await serviceM8Client.getJobs(companyUuid, options);
+    const { data, meta } = await servicem8.listJobs(companyUuid, options);
     
     return NextResponse.json({
       success: true,
-      data: response.data,
-      meta: response.meta,
-      message: `Retrieved ${response.data.length} jobs`
+      data,
+      meta,
+      message: `Retrieved ${Array.isArray(data) ? data.length : 0} jobs`
     });
   } catch (error) {
     console.error('Failed to fetch jobs:', error);
@@ -72,13 +72,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = await serviceM8Client.getQuotes(companyUuid, options);
+    const { data, meta } = await servicem8.listJobs(companyUuid, {
+      ...(options as Record<string, unknown>),
+      status: 'Quote',
+    });
     
     return NextResponse.json({
       success: true,
-      data: response.data,
-      meta: response.meta,
-      message: `Retrieved ${response.data.length} quotes`
+      data,
+      meta,
+      message: `Retrieved ${Array.isArray(data) ? data.length : 0} quotes`
     });
   } catch (error) {
     console.error('Failed to fetch quotes:', error);

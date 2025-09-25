@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { serviceM8Client } from '@/services/servicem8-client';
+import servicem8 from '@api/servicem8';
 
 export async function GET() {
   try {
-    const resp = await serviceM8Client.getClients();
-    return NextResponse.json({ success: true, data: resp.data });
+    const { data } = await servicem8.listClients();
+    return NextResponse.json({ success: true, data });
   } catch (e) {
     console.error('Failed to fetch ServiceM8 clients', e);
     return NextResponse.json({ success: false, error: 'Failed to fetch ServiceM8 clients' }, { status: 500 });
@@ -14,8 +14,8 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const payload = await request.json();
-    const created = await serviceM8Client.createClient(payload);
-    return NextResponse.json({ success: true, data: created });
+    const { data } = await servicem8.createClients(payload);
+    return NextResponse.json({ success: true, data });
   } catch (e) {
     console.error('Failed to create ServiceM8 client', e);
     return NextResponse.json({ 
